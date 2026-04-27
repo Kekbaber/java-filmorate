@@ -10,19 +10,19 @@ import java.time.LocalDate;
 public class User {
 
     @NotNull(groups = {OnUpdate.class}, message = "Id должен быть указан")
-    Long id;
+    private Long id;
 
     @Email(message = "Электронная почта не может быть пустой и должна содержать символ @")
-    String email;
+    private String email;
 
     @NotBlank(message = "Логин не может быть пустым")
     @Pattern(regexp = "^\\S+$", message = "Логин не должен содержать пробелы")
-    String login;
+    private String login;
 
-    String name;
+    private String name;
 
     @Past(message = "Дата рождения не может быть в будущем")
-    LocalDate birthday;
+    private LocalDate birthday;
 
     public String getName() {
         return (name == null || name.isBlank()) ? login : name;

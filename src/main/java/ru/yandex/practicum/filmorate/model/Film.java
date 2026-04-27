@@ -14,18 +14,18 @@ import java.time.LocalDate;
 public class Film {
 
     @NotNull(groups = {OnUpdate.class}, message = "Id должен быть указан")
-    Long id;
+    private Long id;
 
     @NotBlank(message = "Название не может быть пустым")
-    String name;
+    private String name;
 
     @Length(max = 200, message = "Максимальная длина описания — 200 символов")
-    String description;
+    private String description;
 
     @NotNull
     @AfterDate(value = "1895-12-28", message = "Дата релиза должна быть не раньше 28 декабря 1895 года")
-    LocalDate releaseDate;
+    private LocalDate releaseDate;
 
     @Positive
-    Long duration;
+    private Long duration;
 }

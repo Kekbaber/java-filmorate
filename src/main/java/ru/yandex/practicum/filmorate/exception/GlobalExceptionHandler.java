@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 @Slf4j
@@ -18,13 +17,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        log.error(ex.getMessage());
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("status", 400);
-        body.put("error", "Validation Failed");
+    public ErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
+        log.error("Validation error", ex);
 
-        List<Map<String, String>> errors = ex.getBindingResult()
+        List<Map<String, String>> details = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(fe -> {
@@ -34,19 +30,45 @@ public class GlobalExceptionHandler {
                     return error;
                 })
                 .toList();
-        body.put("details", errors);
-        return body;
+
+        return ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Validation Failed")
+                .message(ex.getMessage())
+                .details(details)
+                .build();
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> handleBadRequest(IllegalArgumentException ex) {
-        return Map.of("error", ex.getMessage());
+    public ErrorResponse handleIllegalArgument(IllegalArgumentException ex) {
+        log.error("Illegal argument", ex);
+        return ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .message(ex.getMessage())
+                .build();
     }
 
-    @ExceptionHandler(NoSuchElementException.class)
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, Object> handleNotFound(NoSuchElementException ex) {
-        return Map.of("error", ex.getMessage());
+    public ErrorResponse handleNotFound(NotFoundException ex) {
+        log.error("Element not found", ex);
+        return ErrorResponse.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Not Found")
+                .message(ex.getMessage())
+                .build();
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleGeneric(Exception ex) {
+        log.error("Unexpected error", ex);
+        return ErrorResponse.builder()
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error("Internal Server Error")
+                .message(ex.getMessage())
+                .build();
     }
 }
