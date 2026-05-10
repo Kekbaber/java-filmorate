@@ -1,43 +1,52 @@
 package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.impl.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
 
-    private final InMemoryUserStorage storage;
-
-    public UserService(InMemoryUserStorage storage) {
-        this.storage = storage;
-    }
+    private final UserStorage storage;
 
     public Collection<User> findAll() {
-        return storage.findAll();
+        log.debug("Find all users");
+        Collection<User> users = storage.findAll();
+        log.debug("Found {} users", users.size());
+        return users;
     }
 
     public User findById(long id) {
+        log.debug("Find user by id={}", id);
         return storage.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + id + " не найден"));
     }
 
     public User create(@Valid User user) {
-        return storage.create(user);
+        log.info("Create user: login={}, email={}", user.getLogin(), user.getEmail());
+        User created = storage.create(user);
+        log.info("Created user with id={}", created.getId());
+        return created;
     }
 
     public User update(User user) {
-        return storage.update(user);
+        log.info("Update user id={}, login={}", user.getId(), user.getLogin());
+        User updated = storage.update(user);
+        log.info("Updated user id={}", updated.getId());
+        return updated;
     }
 
-    public User delete(long id) {
-        return storage.delete(id);
+    public void delete(long id) {
+        log.info("Delete user id={}", id);
+        storage.delete(id);
+        log.info("Deleted user id={}", id);
     }
 }

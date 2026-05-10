@@ -22,13 +22,13 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     public Collection<User> findAll() {
-        log.info("Get users. Find {} users: {}", users.size(), users.values());
+        log.debug("Get all users from storage, size={}", users.size());
         return users.values();
     }
 
     @Override
     public Optional<User> findById(long id) {
-        log.info("Get user by id {}", id);
+        log.debug("Find user by id={} in storage", id);
         return Optional.ofNullable(users.get(id));
     }
 
@@ -37,7 +37,7 @@ public class InMemoryUserStorage implements UserStorage {
         long id = idGenerator.getNextId();
         user.setId(id);
         users.put(id, user);
-        log.info("Add user: id={}, login={}, Email={}", id, user.getLogin(), user.getEmail());
+        log.info("Storage: added user id={}, login={}", id, user.getLogin());
         return user;
     }
 
@@ -45,18 +45,22 @@ public class InMemoryUserStorage implements UserStorage {
     public User update(User user) {
         long id = user.getId();
         if (!users.containsKey(id)) {
+            log.warn("Attempt to update non-existing user id={}", id);
             throw new NotFoundException("Пользователь с id = " + user.getId() + " не найден");
         }
         users.put(user.getId(), user);
-        log.info("Update user: id={}, login={}, Email={}", id, user.getLogin(), user.getEmail());
+        log.info("Storage: updated user id={}, login={}", id, user.getLogin());
         return user;
     }
 
     @Override
-    public User delete(long id) {
+    public void delete(long id) {
         User user = users.get(id);
-        log.info("Remove user: id={}, login={}, Email={}", user.getId(), user.getLogin(), user.getEmail());
+        if (user == null) {
+            log.warn("Attempt to delete non-existing user id={}", id);
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
+        log.info("Storage: removed user id={}, login={}", id, user.getLogin());
         users.remove(id);
-        return user;
     }
 }
