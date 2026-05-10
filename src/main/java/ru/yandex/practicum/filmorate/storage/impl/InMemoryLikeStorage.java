@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
@@ -28,14 +29,17 @@ public class InMemoryLikeStorage implements LikeStorage {
 
     @Override
     public void add(long filmId, long userId) {
-        log.debug("Add like: filmId={}, userId={}", filmId, userId);
         likes.add(new Like(filmId, userId));
+        log.debug("Storage: Add like: filmId={}, userId={}", filmId, userId);
     }
 
     @Override
     public void remove(long filmId, long userId) {
-        log.debug("Remove like: filmId={}, userId={}", filmId, userId);
-        likes.remove(new Like(filmId, userId));
+        log.debug("Storage: Remove like: filmId={}, userId={}", filmId, userId);
+        boolean removed = likes.remove(new Like(filmId, userId));
+        if (!removed) {
+            log.warn("Attempt to remove non-existing like: filmId={}, userId={}", filmId, userId);
+        }
     }
 
     @Override
