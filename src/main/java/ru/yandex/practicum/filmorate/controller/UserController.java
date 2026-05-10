@@ -36,7 +36,7 @@ public class UserController {
     public User create(@Valid @RequestBody User user) {
         log.info("POST /users: {}", user.getLogin());
         User created = userService.create(user);
-        log.info("Created user with id={}", user);
+        log.info("Created user with id={}", user.getId());
         return created;
     }
 
