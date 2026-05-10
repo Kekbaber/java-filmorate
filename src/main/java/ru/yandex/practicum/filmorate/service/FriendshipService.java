@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
-import ru.yandex.practicum.filmorate.storage.impl.InMemoryFriendshipStorage;
 
 import java.util.Collection;
 import java.util.Set;
@@ -12,16 +12,11 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class FriendshipService {
 
     private final FriendshipStorage storage;
     private final UserService userService;
-
-    public FriendshipService(InMemoryFriendshipStorage storage,
-                             UserService userService) {
-        this.storage = storage;
-        this.userService = userService;
-    }
 
     public void add(long userId, long friendId) {
         log.info("Creating new friendship between {} and {}", userId, friendId);
