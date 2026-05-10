@@ -24,14 +24,15 @@ public class InMemoryFilmStorage implements FilmStorage {
         this.idGenerator = idGenerator;
     }
 
+    @Override
     public Collection<Film> findAll() {
-        log.info("Find all films. Found={}", films.size());
+        log.debug("Get all films from storage, size={}", films.size());
         return films.values();
     }
 
     @Override
     public Optional<Film> findById(long id) {
-        log.info("Find film by id={}", id);
+        log.debug("Find film by id={} in storage", id);
         return Optional.ofNullable(films.get(id));
     }
 
@@ -40,7 +41,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         long id = idGenerator.getNextId();
         film.setId(id);
         films.put(id, film);
-        log.info("Add film: id={}, name={}, releaseDate={}", id, film.getName(), film.getReleaseDate());
+        log.info("Storage: added film id={}, name={}, releaseDate={}", id, film.getName(), film.getReleaseDate());
         return film;
     }
 
@@ -48,17 +49,22 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film update(Film film) {
         long id = film.getId();
         if (!films.containsKey(id)) {
-            throw new NotFoundException("Пост с id = " + film.getId() + " не найден");
+            log.warn("Attempt to update non-existing film id={}", id);
+            throw new NotFoundException("Фильм с id=" + id + " не найден");
         }
-        films.put(film.getId(), film);
-        log.info("Update film: id={}, name={}, releaseDate={}", id, film.getName(), film.getReleaseDate());
+        films.put(id, film);
+        log.info("Storage: updated film id={}, name={}", id, film.getName());
         return film;
     }
 
     @Override
     public void delete(long id) {
-        log.info("Remove film by id={}", id);
+        Film film = films.get(id);
+        if (film == null) {
+            log.warn("Attempt to delete non-existing film id={}", id);
+            return; // или можно выбросить исключение, но обычно delete идемпотентен
+        }
+        log.info("Storage: removed film id={}, name={}", id, film.getName());
         films.remove(id);
     }
-
 }
