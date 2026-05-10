@@ -76,7 +76,7 @@ public class UserController {
     public void deleteFriend(
             @PathVariable(name = "id") long userId,
             @PathVariable long friendId
-    ){
+    ) {
         log.info("DELETE /users/{}/friends/{}", userId, friendId);
         friendshipService.remove(userId, friendId);
     }
