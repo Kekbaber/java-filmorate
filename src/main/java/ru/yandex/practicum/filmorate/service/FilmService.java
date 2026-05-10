@@ -25,7 +25,6 @@ public class FilmService {
 
     public Film findById(long id) {
         log.debug("Find film by id={}", id);
-        // Исключение будет обработано глобально, логировать здесь не обязательно
         return storage.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фильм с id=" + id + " не найден"));
     }
