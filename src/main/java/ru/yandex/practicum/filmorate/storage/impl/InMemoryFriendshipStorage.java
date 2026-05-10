@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 
@@ -39,7 +38,6 @@ public class InMemoryFriendshipStorage implements FriendshipStorage {
         Friendship f2 = new Friendship(friendId, userId);
         if (!friendships.contains(f1) && !friendships.contains(f2)) {
             log.warn("Attempt to remove non-existing friendship {} <-> {}", userId, friendId);
-            throw new NotFoundException("Не найдено дружбы между " + userId + " и " + friendId);
         }
         log.info("Storage: remove friendship {} <-> {}", userId, friendId);
         friendships.remove(f1);
