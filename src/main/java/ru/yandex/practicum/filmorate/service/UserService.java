@@ -1,47 +1,43 @@
 package ru.yandex.practicum.filmorate.service;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.util.IdGenerator;
-import ru.yandex.practicum.filmorate.util.UserIdGenerator;
+import ru.yandex.practicum.filmorate.storage.impl.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @Slf4j
 public class UserService {
 
-    private final Map<Long, User> users = new HashMap<>();
-    private final IdGenerator idGenerator;
+    private final InMemoryUserStorage storage;
 
-    public UserService(UserIdGenerator idGenerator) {
-        this.idGenerator = idGenerator;
+    public UserService(InMemoryUserStorage storage) {
+        this.storage = storage;
     }
 
     public Collection<User> findAll() {
-        log.info("Get users. Find {} users: {}", users.size(), users.values());
-        return users.values();
+        return storage.findAll();
     }
 
-    public User create(User user) {
-        long id = idGenerator.getNextId();
-        user.setId(id);
-        users.put(id, user);
-        log.info("Posted user: id={}, login={}, Email={}", id, user.getLogin(), user.getEmail());
-        return user;
+    public User findById(long id) {
+        return storage.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id: " + id + " не найден"));
+    }
+
+    public User create(@Valid User user) {
+        return storage.create(user);
     }
 
     public User update(User user) {
-        long id = user.getId();
-        if (!users.containsKey(id)) {
-            throw new NotFoundException("Пост с id = " + user.getId() + " не найден");
-        }
-        users.put(user.getId(), user);
-        log.info("Updated user: id={}, login={}, Email={}", id, user.getLogin(), user.getEmail());
-        return user;
+        return storage.update(user);
+    }
+
+    public User delete(long id) {
+        return storage.delete(id);
     }
 }
