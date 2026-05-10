@@ -48,7 +48,7 @@ public class UserController {
         return updated;
     }
 
-    @DeleteMapping("/id")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable long id) {
         log.info("DELETE /users/{}", id);
