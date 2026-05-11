@@ -47,7 +47,7 @@ public class FriendshipServiceImpl implements FriendshipService {
         userService.findById(userId);
         userService.findById(friendId);
 
-        if (areFriends(userId, friendId)) {
+        if (!areFriends(userId, friendId)) {
             log.warn("Attempt to remove non-existing friendship {} <-> {}", userId, friendId);
         }
 
