@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.FriendshipService;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.impl.FriendshipServiceImpl;
+import ru.yandex.practicum.filmorate.service.impl.UserServiceImpl;
 import ru.yandex.practicum.filmorate.validation.OnUpdate;
 
 import java.util.Collection;
@@ -20,8 +20,8 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
-    private final FriendshipService friendshipService;
+    private final UserServiceImpl userService;
+    private final FriendshipServiceImpl friendshipService;
 
     @GetMapping
     public Collection<User> findAll() {
