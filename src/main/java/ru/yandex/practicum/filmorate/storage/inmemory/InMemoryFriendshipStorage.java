@@ -36,9 +36,6 @@ public class InMemoryFriendshipStorage implements FriendshipStorage {
     public void remove(long userId, long friendId) {
         Friendship f1 = new Friendship(userId, friendId);
         Friendship f2 = new Friendship(friendId, userId);
-        if (!friendships.contains(f1) && !friendships.contains(f2)) {
-            log.warn("Attempt to remove non-existing friendship {} <-> {}", userId, friendId);
-        }
         log.info("Storage: remove friendship {} <-> {}", userId, friendId);
         friendships.remove(f1);
         friendships.remove(f2);

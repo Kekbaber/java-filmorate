@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.DuplicateFriendshipException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FriendshipService;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -26,6 +28,14 @@ public class FriendshipServiceImpl implements FriendshipService {
         log.debug("Checking existence of users {} and {}", userId, friendId);
         userService.findById(userId);
         userService.findById(friendId);
+
+        if (areFriends(userId, friendId)) {
+            log.warn("Friendship {} <-> {} already exist", userId, friendId);
+            throw new DuplicateFriendshipException(
+                String.format("Пользователи %d и %d уже дружат", userId, friendId)
+            );
+        }
+
         storage.add(userId, friendId);
         log.debug("Friendship added to storage for {} <-> {}", userId, friendId);
     }
@@ -36,6 +46,14 @@ public class FriendshipServiceImpl implements FriendshipService {
         log.debug("Checking existence of users {} and {}", userId, friendId);
         userService.findById(userId);
         userService.findById(friendId);
+
+        if (areFriends(userId, friendId)) {
+            log.warn("Attempt to remove non-existing friendship {} <-> {}", userId, friendId);
+            throw new NotFoundException(
+                    String.format("Дружба между пользователями %d и %d не найдена", userId, friendId)
+            );
+        }
+
         storage.remove(userId, friendId);
         log.debug("Friendship removed from storage for {} <-> {}", userId, friendId);
     }
@@ -71,5 +89,10 @@ public class FriendshipServiceImpl implements FriendshipService {
                 .toList();
         log.debug("Found {} common friends", common.size());
         return common;
+    }
+
+    @Override
+    public boolean areFriends(long userId, long friendId) {
+        return storage.findById(userId).contains(friendId);
     }
 }

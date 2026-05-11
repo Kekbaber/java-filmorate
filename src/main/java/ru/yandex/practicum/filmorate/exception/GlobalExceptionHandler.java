@@ -61,6 +61,17 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
+    @ExceptionHandler(DuplicateFriendshipException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleDuplicateFriendship(DuplicateFriendshipException ex) {
+        log.error("Friendship duplication", ex);
+        return ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error("Conflict")
+                .message(ex.getMessage())
+                .build();
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleGeneric(Exception ex) {
