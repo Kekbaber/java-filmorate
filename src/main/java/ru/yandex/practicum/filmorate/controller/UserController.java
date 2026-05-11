@@ -73,6 +73,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteFriend(
             @PathVariable(name = "id") long userId,
             @PathVariable long friendId
