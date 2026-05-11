@@ -49,9 +49,6 @@ public class FriendshipServiceImpl implements FriendshipService {
 
         if (areFriends(userId, friendId)) {
             log.warn("Attempt to remove non-existing friendship {} <-> {}", userId, friendId);
-            throw new NotFoundException(
-                    String.format("Дружба между пользователями %d и %d не найдена", userId, friendId)
-            );
         }
 
         storage.remove(userId, friendId);

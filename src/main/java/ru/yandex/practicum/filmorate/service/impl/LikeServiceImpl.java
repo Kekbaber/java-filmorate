@@ -36,6 +36,9 @@ public class LikeServiceImpl implements LikeService {
         log.debug("Checking existence of film {} and user {}", filmId, userId);
         filmService.findById(filmId);
         userService.findById(userId);
+        if (!storage.findById(filmId).contains(userId)) {
+            log.warn("Attempt to remove non-existing like: filmId={}, userId={}", filmId, userId);
+        }
         storage.remove(filmId, userId);
         log.debug("Like removed successfully for filmId={}, userId={}", filmId, userId);
     }

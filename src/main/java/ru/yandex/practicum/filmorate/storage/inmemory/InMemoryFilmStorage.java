@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.util.FilmIdGenerator;
@@ -48,10 +47,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         long id = film.getId();
-        if (!films.containsKey(id)) {
-            log.warn("Attempt to update non-existing film id={}", id);
-            throw new NotFoundException("Фильм с id=" + id + " не найден");
-        }
         films.put(id, film);
         log.info("Storage: updated film id={}, name={}", id, film.getName());
         return film;
@@ -60,10 +55,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void delete(long id) {
         Film film = films.get(id);
-        if (film == null) {
-            log.warn("Attempt to delete non-existing film id={}", id);
-            return; // или можно выбросить исключение, но обычно delete идемпотентен
-        }
         log.info("Storage: removed film id={}, name={}", id, film.getName());
         films.remove(id);
     }

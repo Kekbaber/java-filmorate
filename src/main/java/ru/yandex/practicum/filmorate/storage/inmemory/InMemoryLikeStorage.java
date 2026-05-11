@@ -35,10 +35,7 @@ public class InMemoryLikeStorage implements LikeStorage {
     @Override
     public void remove(long filmId, long userId) {
         log.debug("Storage: Remove like: filmId={}, userId={}", filmId, userId);
-        boolean removed = likes.remove(new Like(filmId, userId));
-        if (!removed) {
-            log.warn("Attempt to remove non-existing like: filmId={}, userId={}", filmId, userId);
-        }
+        likes.remove(new Like(filmId, userId));
     }
 
     @Override

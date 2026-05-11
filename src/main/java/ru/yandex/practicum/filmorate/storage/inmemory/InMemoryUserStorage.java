@@ -2,13 +2,15 @@ package ru.yandex.practicum.filmorate.storage.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.util.IdGenerator;
 import ru.yandex.practicum.filmorate.util.UserIdGenerator;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -44,10 +46,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User update(User user) {
         long id = user.getId();
-        if (!users.containsKey(id)) {
-            log.warn("Attempt to update non-existing user id={}", id);
-            throw new NotFoundException("Пользователь с id = " + user.getId() + " не найден");
-        }
         users.put(user.getId(), user);
         log.info("Storage: updated user id={}, login={}", id, user.getLogin());
         return user;
@@ -56,10 +54,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void delete(long id) {
         User user = users.get(id);
-        if (user == null) {
-            log.warn("Attempt to delete non-existing user id={}", id);
-            throw new NotFoundException("Пользователь с id = " + id + " не найден");
-        }
         log.info("Storage: removed user id={}, login={}", id, user.getLogin());
         users.remove(id);
     }
