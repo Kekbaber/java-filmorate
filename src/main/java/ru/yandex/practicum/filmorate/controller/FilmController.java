@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.impl.FilmServiceImpl;
-import ru.yandex.practicum.filmorate.service.impl.LikeServiceImpl;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.LikeService;
 import ru.yandex.practicum.filmorate.validation.OnUpdate;
 
 import java.util.Collection;
@@ -20,8 +20,8 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class FilmController {
 
-    private final FilmServiceImpl filmService;
-    private final LikeServiceImpl likeService;
+    private final FilmService filmService;
+    private final LikeService likeService;
 
     @GetMapping
     public Collection<Film> findAll() {
