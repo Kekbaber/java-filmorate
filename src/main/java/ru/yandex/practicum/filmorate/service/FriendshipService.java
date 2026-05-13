@@ -12,6 +12,4 @@ public interface FriendshipService {
     public Collection<User> get(long userId);
 
     public Collection<User> getCommonFriends(long id, long otherId);
-
-    public boolean areFriends(long userId, long friendId);
 }

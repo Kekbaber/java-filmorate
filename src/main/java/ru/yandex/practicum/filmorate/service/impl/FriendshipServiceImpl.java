@@ -87,8 +87,7 @@ public class FriendshipServiceImpl implements FriendshipService {
         return common;
     }
 
-    @Override
-    public boolean areFriends(long userId, long friendId) {
+    private boolean areFriends(long userId, long friendId) {
         return storage.findById(userId).contains(friendId);
     }
 }
