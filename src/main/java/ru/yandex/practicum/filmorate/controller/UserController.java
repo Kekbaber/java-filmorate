@@ -50,7 +50,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable long id) {
+    public void delete(@PathVariable @Positive long id) {
         log.info("DELETE /users/{}", id);
         userService.delete(id);
     }
@@ -75,8 +75,8 @@ public class UserController {
     @DeleteMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteFriend(
-            @PathVariable(name = "id") long userId,
-            @PathVariable long friendId
+            @PathVariable(name = "id") @Positive long userId,
+            @PathVariable @Positive long friendId
     ) {
         log.info("DELETE /users/{}/friends/{}", userId, friendId);
         friendshipService.remove(userId, friendId);
