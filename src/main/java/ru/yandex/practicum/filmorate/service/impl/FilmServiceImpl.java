@@ -43,11 +43,7 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Film update(Film film) {
         log.info("Update film id={}, name={}", film.getId(), film.getName());
-        if (storage.findById(film.getId()).isEmpty()) {
-            log.warn("Attempt to update non-existing film id={}", film.getId());
-            throw new NotFoundException(
-                    String.format("Фильм с id=%d не найден", film.getId()));
-        }
+        findById(film.getId());
         Film updated = storage.update(film);
         log.info("Updated film id={}", updated.getId());
         return updated;
@@ -56,9 +52,7 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public void delete(long id) {
         log.info("Delete film id={}", id);
-        if (storage.findById(id).isEmpty()) {
-            log.warn("Attempt to delete non-existing film id={}", id);
-        }
+        findById(id);
         storage.delete(id);
         log.info("Deleted film id={}", id);
     }
