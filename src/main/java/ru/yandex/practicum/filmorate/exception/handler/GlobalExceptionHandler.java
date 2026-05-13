@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.exception;
+package ru.yandex.practicum.filmorate.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -6,6 +6,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exception.model.DuplicateFriendshipException;
+import ru.yandex.practicum.filmorate.exception.model.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.dto.ErrorResponse;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -57,6 +60,17 @@ public class GlobalExceptionHandler {
         return ErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND.value())
                 .error("Not Found")
+                .message(ex.getMessage())
+                .build();
+    }
+
+    @ExceptionHandler(DuplicateFriendshipException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleDuplicateFriendship(DuplicateFriendshipException ex) {
+        log.error("Friendship duplication", ex);
+        return ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error("Conflict")
                 .message(ex.getMessage())
                 .build();
     }

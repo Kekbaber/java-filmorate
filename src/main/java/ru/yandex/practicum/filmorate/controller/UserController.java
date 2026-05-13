@@ -1,56 +1,98 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.util.IdGenerator;
-import ru.yandex.practicum.filmorate.util.UserIdGenerator;
-import ru.yandex.practicum.filmorate.validation.OnUpdate;
+import ru.yandex.practicum.filmorate.service.FriendshipService;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.validation.group.OnUpdate;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
+@RequiredArgsConstructor
 public class UserController {
 
-    private final Map<Long, User> users = new HashMap<>();
-    private final IdGenerator idGenerator;
-
-    public UserController(UserIdGenerator idGenerator) {
-        this.idGenerator = idGenerator;
-    }
+    private final UserService userService;
+    private final FriendshipService friendshipService;
 
     @GetMapping
     public Collection<User> findAll() {
-        log.info("Get users. Find {} users: {}", users.size(), users.values());
-        return users.values();
+        log.debug("GET /users");
+        Collection<User> users = userService.findAll();
+        log.debug("GET /user -> returned {} users", users.size());
+        return users;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@Valid @RequestBody User user) {
-        long id = idGenerator.getNextId();
-        user.setId(id);
-        users.put(id, user);
-        log.info("Posted user: id={}, login={}, Email={}", id, user.getLogin(), user.getEmail());
-        return user;
+        log.info("POST /users: {}", user.getLogin());
+        User created = userService.create(user);
+        log.info("Created user with id={}", user.getId());
+        return created;
     }
 
     @PutMapping
     public User update(@Validated(OnUpdate.class) @RequestBody User user) {
-        long id = user.getId();
-        if (!users.containsKey(id)) {
-            throw new NotFoundException("Пост с id = " + user.getId() + " не найден");
-        }
-        users.put(user.getId(), user);
-        log.info("Updated user: id={}, login={}, Email={}", id, user.getLogin(), user.getEmail());
-        return user;
+        log.info("PUT /users: {}", user.getId());
+        User updated = userService.update(user);
+        log.info("Updated user with id={}", user.getId());
+        return updated;
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable @Positive long id) {
+        log.info("DELETE /users/{}", id);
+        userService.delete(id);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void addFriend(
+            @PathVariable(name = "id") @Positive long userId,
+            @PathVariable @Positive long friendId) {
+        log.info("PUT /users/{}/friends/{}", userId, friendId);
+        friendshipService.add(userId, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable(name = "id") @Positive long userId) {
+        log.debug("GET /users/{}/friends", userId);
+        Collection<User> userFriends = friendshipService.get(userId);
+        log.debug("Returned {} friends", userFriends.size());
+        return userFriends;
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFriend(
+            @PathVariable(name = "id") @Positive long userId,
+            @PathVariable @Positive long friendId
+    ) {
+        log.info("DELETE /users/{}/friends/{}", userId, friendId);
+        friendshipService.remove(userId, friendId);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(
+            @PathVariable long id,
+            @PathVariable long otherId
+    ) {
+        log.debug("GET /users/{}/friends/common/{}", id, otherId);
+        Collection<User> commonFriends = friendshipService.getCommonFriends(id, otherId);
+        log.debug("Returned {} common friends", commonFriends.size());
+        return commonFriends;
     }
 }
+
+
+

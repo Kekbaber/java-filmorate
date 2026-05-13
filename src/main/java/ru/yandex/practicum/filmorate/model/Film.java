@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
-import ru.yandex.practicum.filmorate.validation.AfterDate;
-import ru.yandex.practicum.filmorate.validation.OnUpdate;
+import ru.yandex.practicum.filmorate.validation.constraint.AfterDate;
+import ru.yandex.practicum.filmorate.validation.group.OnUpdate;
 
 import java.time.LocalDate;
 

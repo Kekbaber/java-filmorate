@@ -1,56 +1,84 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.util.FilmIdGenerator;
-import ru.yandex.practicum.filmorate.util.IdGenerator;
-import ru.yandex.practicum.filmorate.validation.OnUpdate;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.LikeService;
+import ru.yandex.practicum.filmorate.validation.group.OnUpdate;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
+@RequiredArgsConstructor
 public class FilmController {
 
-    private final Map<Long, Film> films = new HashMap<>();
-    private final IdGenerator idGenerator;
-
-    public FilmController(FilmIdGenerator idGenerator) {
-        this.idGenerator = idGenerator;
-    }
+    private final FilmService filmService;
+    private final LikeService likeService;
 
     @GetMapping
     public Collection<Film> findAll() {
-        log.info("Get films. Find {} films: {}", films.size(), films.values());
-        return films.values();
+        log.debug("GET /films");
+        Collection<Film> films = filmService.findAll();
+        log.debug("GET /films -> returned {} films", films.size());
+        return films;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film create(@Valid @RequestBody Film film) {
-        long id = idGenerator.getNextId();
-        film.setId(id);
-        films.put(id, film);
-        log.info("Posted film: id={}, name={}, releaseDate={}", id, film.getName(), film.getReleaseDate());
-        return film;
+        log.info("POST /films: {}", film.getName());
+        Film created = filmService.create(film);
+        log.info("Created film with id={}", created.getId());
+        return created;
     }
 
     @PutMapping
     public Film update(@Validated(OnUpdate.class) @RequestBody Film film) {
-        long id = film.getId();
-        if (!films.containsKey(id)) {
-            throw new NotFoundException("Пост с id = " + film.getId() + " не найден");
-        }
-        films.put(film.getId(), film);
-        log.info("Updated film: id={}, name={}, releaseDate={}", id, film.getName(), film.getReleaseDate());
-        return film;
+        log.info("PUT /films: id={}", film.getId());
+        Film updated = filmService.update(film);
+        log.info("Updated film with id={}", updated.getId());
+        return updated;
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable @Positive long id) {
+        log.info("DELETE /films/{}", id);
+        filmService.delete(id);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(
+            @PathVariable(name = "id") @Positive long filmId,
+            @PathVariable @Positive long userId
+    ) {
+        log.info("PUT films/{}/like/{} - add like", filmId, userId);
+        likeService.add(filmId, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeLike(
+            @PathVariable(name = "id") @Positive long filmId,
+            @PathVariable @Positive long userId
+    ) {
+        log.info("DELETE films/{}/like/{} - remove like", filmId, userId);
+        likeService.remove(filmId, userId);
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") @Positive long count) {
+        log.debug("GET /films/popular?count={}", count);
+        Collection<Film> popular = likeService.getPopular(count);
+        log.debug("Returned {} popular films", popular.size());
+        return popular;
     }
 }
