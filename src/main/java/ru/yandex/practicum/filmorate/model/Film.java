@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.validation.constraint.AfterDate;
 import ru.yandex.practicum.filmorate.validation.group.OnUpdate;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class Film {
@@ -28,4 +29,8 @@ public class Film {
 
     @Positive
     private Long duration;
+
+    private List<Genres> genres;
+
+    private Mpa mpa;
 }
