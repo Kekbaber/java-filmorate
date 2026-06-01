@@ -1,14 +1,14 @@
-package ru.yandex.practicum.filmorate.storage.inmemory;
+package ru.yandex.practicum.filmorate.storage.inmemory.id.impl;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.storage.IdGenerator;
+import ru.yandex.practicum.filmorate.storage.inmemory.id.IdGenerator;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 @Profile("inmemory")
-public class FilmIdGenerator implements IdGenerator {
+public class UserIdGenerator implements IdGenerator {
 
     private final AtomicLong counter = new AtomicLong(1);
 
