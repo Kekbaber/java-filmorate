@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.validation.constraint.AfterDate;
 
 import java.time.LocalDate;
@@ -27,7 +25,7 @@ public class CreateFilmRequest {
     @Positive
     private long duration;
 
-    private List<Genre> genres;
+    private List<GenreDto> genres;
 
-    private Mpa mpa;
+    private MpaDto mpa;
 }

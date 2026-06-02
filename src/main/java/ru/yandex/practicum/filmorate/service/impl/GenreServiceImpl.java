@@ -42,13 +42,8 @@ public class GenreServiceImpl implements GenreService {
 
     @Override
     @Transactional
-    public void updateFilmGenres(long filmId, List<Genre> genres) {
-        List<Long> genreIds = null;
-        if (genres != null) {
-            genreIds = genres.stream()
-                    .map(Genre::getId)
-                    .distinct()
-                    .toList();
+    public void updateFilmGenres(long filmId, List<Long> genreIds) {
+        if (genreIds != null) {
             log.debug("update film genres: filmId={}, genreIds={}", filmId, genreIds);
             Set<Long> existingIds = genreStorage.findExistingGenreIds(
                     new HashSet<>(genreIds));

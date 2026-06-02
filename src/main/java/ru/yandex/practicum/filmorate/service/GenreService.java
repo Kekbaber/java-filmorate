@@ -13,7 +13,7 @@ public interface GenreService {
 
     List<Genre> findGenresForFilm(long filmId);
 
-    void updateFilmGenres(long filmId, List<Genre> genres);
+    void updateFilmGenres(long filmId, List<Long> genreIds);
 
     Map<Long, List<Genre>> findGenresByFilmIds(Set<Long> filmIds);
 }

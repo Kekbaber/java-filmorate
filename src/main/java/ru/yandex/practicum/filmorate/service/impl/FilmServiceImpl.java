@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.dto.request.CreateFilmRequest;
+import ru.yandex.practicum.filmorate.dto.request.GenreDto;
 import ru.yandex.practicum.filmorate.dto.request.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.dto.response.FilmResponse;
 import ru.yandex.practicum.filmorate.exception.model.NotFoundException;
@@ -57,7 +58,10 @@ public class FilmServiceImpl implements FilmService {
         }
         Film film = filmMapper.toEntity(request);
         Film created = filmStorage.create(film);
-        genreService.updateFilmGenres(film.getId(), request.getGenres());
+        List<Long> genreIds = request.getGenres() != null
+                ? request.getGenres().stream().map(GenreDto::getId).distinct().toList()
+                : null;
+        genreService.updateFilmGenres(film.getId(), genreIds);
         log.debug("Created film with id={}", created.getId());
         return buildFilmResponse(created);
     }
@@ -69,7 +73,10 @@ public class FilmServiceImpl implements FilmService {
         findById(request.getId());
         Film film = filmMapper.toEntity(request);
         Film updated = filmStorage.update(film);
-        genreService.updateFilmGenres(film.getId(), request.getGenres());
+        List<Long> genreIds = request.getGenres() != null
+                ? request.getGenres().stream().map(GenreDto::getId).distinct().toList()
+                : null;
+        genreService.updateFilmGenres(film.getId(), genreIds);
         log.debug("Updated film id={}", updated.getId());
         return buildFilmResponse(updated);
     }

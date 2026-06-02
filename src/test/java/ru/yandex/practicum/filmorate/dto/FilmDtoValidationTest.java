@@ -7,8 +7,8 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.dto.request.CreateFilmRequest;
+import ru.yandex.practicum.filmorate.dto.request.MpaDto;
 import ru.yandex.practicum.filmorate.dto.request.UpdateFilmRequest;
-import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,7 +31,7 @@ class FilmDtoValidationTest {
         request.setName("Name");
         request.setReleaseDate(LocalDate.now());
         request.setDuration(100L);
-        request.setMpa(new Mpa());
+        request.setMpa(new MpaDto());
         request.setGenres(List.of());
         return request;
     }
@@ -42,7 +42,7 @@ class FilmDtoValidationTest {
         request.setName("Name");
         request.setReleaseDate(LocalDate.now());
         request.setDuration(100L);
-        request.setMpa(new Mpa());
+        request.setMpa(new MpaDto());
         request.setGenres(List.of());
         return request;
     }
