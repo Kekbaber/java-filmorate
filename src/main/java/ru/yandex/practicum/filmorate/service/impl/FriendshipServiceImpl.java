@@ -18,12 +18,14 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FriendshipServiceImpl implements FriendshipService {
 
     private final FriendshipStorage friendshipStorage;
     private final UserService userService;
 
     @Override
+    @Transactional
     public void addFriendRequest(long userId, long friendId) {
         log.info("Creating new friendship between {} and {}", userId, friendId);
         userService.findById(userId);
@@ -50,6 +52,7 @@ public class FriendshipServiceImpl implements FriendshipService {
     }
 
     @Override
+    @Transactional
     public void deleteFriend(long userId, long friendId) {
         log.debug("Removing friendship between {} and {}", userId, friendId);
         userService.findById(userId);

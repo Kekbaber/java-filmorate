@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.dto.request.CreateUserRequest;
 import ru.yandex.practicum.filmorate.dto.request.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.response.UserResponse;
@@ -19,6 +20,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
@@ -42,6 +44,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponse create(@Valid CreateUserRequest request) {
         log.info("Create user: login={}, email={}", request.getLogin(), request.getEmail());
         User user = userMapper.toEntity(request);
@@ -51,6 +54,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponse update(UpdateUserRequest request) {
         log.info("Update user id={}, login={}", request.getId(), request.getLogin());
         if (userStorage.findById(request.getId()).isEmpty()) {
@@ -63,6 +67,8 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(updated);
     }
 
+    @Override
+    @Transactional
     public void delete(long id) {
         log.info("Delete user id={}", id);
         if (userStorage.findById(id).isEmpty()) {

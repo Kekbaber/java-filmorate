@@ -14,6 +14,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class GenreServiceImpl implements GenreService {
     private final GenreStorage genreStorage;
 
@@ -42,14 +43,12 @@ public class GenreServiceImpl implements GenreService {
                     .map(Genre::getId)
                     .distinct()
                     .toList();
-            // Проверяем, что все переданные жанры существуют в справочнике
             for (Long id : genreIds) {
                 if (genreStorage.findById(id).isEmpty()) {
                     throw new NotFoundException("Жанр с id=" + id + " не найден");
                 }
             }
         }
-        // Вызываем метод хранилища, который удалит старые связи и добавит новые
         genreStorage.updateFilmGenres(filmId, genreIds);
     }
 }

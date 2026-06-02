@@ -20,6 +20,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FilmServiceImpl implements FilmService {
 
     private final FilmStorage filmStorage;
@@ -71,6 +72,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
+    @Transactional
     public void delete(long id) {
         log.info("Delete film id={}", id);
         findById(id);
