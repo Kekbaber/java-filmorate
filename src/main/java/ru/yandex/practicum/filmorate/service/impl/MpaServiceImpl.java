@@ -35,6 +35,7 @@ public class MpaServiceImpl implements MpaService {
 
     @Override
     public Map<Long, Mpa> findAllByIds(Set<Long> ids) {
+        log.debug("find MPAs by ids={}", ids);
         return mpaStorage.findAllByIds(ids);
     }
 }
