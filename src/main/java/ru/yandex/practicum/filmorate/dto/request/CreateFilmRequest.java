@@ -25,10 +25,9 @@ public class CreateFilmRequest {
     private LocalDate releaseDate;
 
     @Positive
-    private Long duration;
+    private long duration;
 
     private List<Genre> genres;
 
-    @NotNull
     private Mpa mpa;
 }

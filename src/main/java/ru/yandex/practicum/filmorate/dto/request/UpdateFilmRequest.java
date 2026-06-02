@@ -28,7 +28,7 @@ public class UpdateFilmRequest {
     private LocalDate releaseDate;
 
     @Positive
-    private Long duration;
+    private long duration;
 
     private List<Genre> genres;
 
