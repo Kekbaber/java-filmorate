@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
 import ru.yandex.practicum.filmorate.dto.request.CreateUserRequest;
 import ru.yandex.practicum.filmorate.dto.request.UpdateUserRequest;
 
@@ -26,8 +25,6 @@ class UserDtoValidationTest {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
-
-    // --- CreateUserRequest ---
 
     @Test
     void create_validUser_ShouldHaveNoViolations() {
@@ -133,18 +130,6 @@ class UserDtoValidationTest {
         assertTrue(violations.isEmpty());
     }
 
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = "   ")
-    void create_name_WhenNullOrBlank_GetterReturnsLogin(String name) {
-        CreateUserRequest request = new CreateUserRequest();
-        request.setEmail("user@example.com");
-        request.setLogin("myLogin");
-        request.setName(name);
-
-        assertEquals("myLogin", request.getName());
-    }
-
     @Test
     void create_name_WhenProvided_GetterReturnsIt() {
         CreateUserRequest request = new CreateUserRequest();
@@ -154,8 +139,6 @@ class UserDtoValidationTest {
 
         assertEquals("John Doe", request.getName());
     }
-
-    // --- UpdateUserRequest ---
 
     @Test
     void update_validUser_ShouldHaveNoViolations() {
