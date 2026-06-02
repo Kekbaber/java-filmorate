@@ -5,14 +5,15 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dto.request.CreateFilmRequest;
+import ru.yandex.practicum.filmorate.dto.request.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.dto.response.FilmResponse;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.LikeService;
-import ru.yandex.practicum.filmorate.validation.group.OnUpdate;
 
-import java.util.Collection;
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/films")
@@ -24,26 +25,31 @@ public class FilmController {
     private final LikeService likeService;
 
     @GetMapping
-    public Collection<Film> findAll() {
+    public List<FilmResponse> findAll() {
         log.debug("GET /films");
-        Collection<Film> films = filmService.findAll();
+        List<FilmResponse> films = filmService.findAll();
         log.debug("GET /films -> returned {} films", films.size());
         return films;
     }
 
+    @GetMapping("/{id}")
+    public FilmResponse findFilmById(@PathVariable long id) {
+        return filmService.findById(id);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Film create(@Valid @RequestBody Film film) {
-        log.info("POST /films: {}", film.getName());
-        Film created = filmService.create(film);
+    public FilmResponse create(@Valid @RequestBody CreateFilmRequest request) {
+        log.info("POST /films: {}", request.getName());
+        FilmResponse created = filmService.create(request);
         log.info("Created film with id={}", created.getId());
         return created;
     }
 
     @PutMapping
-    public Film update(@Validated(OnUpdate.class) @RequestBody Film film) {
-        log.info("PUT /films: id={}", film.getId());
-        Film updated = filmService.update(film);
+    public FilmResponse update(@Valid @RequestBody UpdateFilmRequest request) {
+        log.info("PUT /films: id={}", request.getId());
+        FilmResponse updated = filmService.update(request);
         log.info("Updated film with id={}", updated.getId());
         return updated;
     }
@@ -61,7 +67,7 @@ public class FilmController {
             @PathVariable @Positive long userId
     ) {
         log.info("PUT films/{}/like/{} - add like", filmId, userId);
-        likeService.add(filmId, userId);
+        likeService.addLike(filmId, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
@@ -71,13 +77,13 @@ public class FilmController {
             @PathVariable @Positive long userId
     ) {
         log.info("DELETE films/{}/like/{} - remove like", filmId, userId);
-        likeService.remove(filmId, userId);
+        likeService.deleteLike(filmId, userId);
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") @Positive long count) {
+    public List<FilmResponse> getPopularFilms(@RequestParam(defaultValue = "10") @Positive long count) {
         log.debug("GET /films/popular?count={}", count);
-        Collection<Film> popular = likeService.getPopular(count);
+        List<FilmResponse> popular = filmService.findPopularFilms(count);
         log.debug("Returned {} popular films", popular.size());
         return popular;
     }
