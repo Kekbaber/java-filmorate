@@ -5,12 +5,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.storage.IdGenerator;
+import ru.yandex.practicum.filmorate.storage.inmemory.id.IdGenerator;
+import ru.yandex.practicum.filmorate.storage.inmemory.id.impl.UserIdGenerator;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @Profile("inmemory")
@@ -24,9 +22,9 @@ public class InMemoryUserStorage implements UserStorage {
         this.idGenerator = idGenerator;
     }
 
-    public Collection<User> findAll() {
+    public List<User> findAll() {
         log.debug("Get all users from storage, size={}", users.size());
-        return users.values();
+        return users.values().stream().toList();
     }
 
     @Override
@@ -57,5 +55,10 @@ public class InMemoryUserStorage implements UserStorage {
         User user = users.get(id);
         log.info("Storage: removed user id={}, login={}", id, user.getLogin());
         users.remove(id);
+    }
+
+    @Override
+    public List<User> findAllByIds(Collection<Long> ids) {
+        return users.values().stream().filter(user -> ids.contains(user.getId())).toList();
     }
 }

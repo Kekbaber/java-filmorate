@@ -3,9 +3,13 @@ package ru.yandex.practicum.filmorate.storage;
 import java.util.Set;
 
 public interface FriendshipStorage {
-    public Set<Long> findById(long userId);
+    Set<Long> findConfirmedFriendIds(long userId);
 
-    public void add(long userId, long friendId);
+    Set<Long> findOutgoingRequests(long userId);
 
-    public void remove(long userId, long friendId);
+    Set<Long> findIncomingRequests(long userId);
+
+    void addFriendRequest(long userId, long friendId, boolean confirmed);
+
+    void deleteFriendship(long userId, long friendId);
 }
