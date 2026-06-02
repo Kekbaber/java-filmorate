@@ -20,11 +20,8 @@ import java.util.Optional;
 @Slf4j
 public class UserDBStorage extends BaseStorage<User> implements UserStorage {
 
-    private final NamedParameterJdbcTemplate namedJdbcTemplate;
-
-    public UserDBStorage(JdbcTemplate jdbc, RowMapper<User> mapper, NamedParameterJdbcTemplate namedJdbcTemplate) {
+    public UserDBStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
-        this.namedJdbcTemplate = namedJdbcTemplate;
     }
 
     @Override
@@ -76,7 +73,7 @@ public class UserDBStorage extends BaseStorage<User> implements UserStorage {
             return List.of();
         }
         MapSqlParameterSource params = new MapSqlParameterSource("ids", ids);
-        List<User> users = namedJdbcTemplate.query(UserQueries.FIND_USERS_BY_IDS, params, mapper);
+        List<User> users = namedJdbc.query(UserQueries.FIND_USERS_BY_IDS, params, mapper);
         log.debug("DB: found {} users by ids", users.size());
         return users;
     }
