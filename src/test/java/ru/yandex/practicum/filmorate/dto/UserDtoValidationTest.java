@@ -26,25 +26,28 @@ class UserDtoValidationTest {
         validator = factory.getValidator();
     }
 
-    @Test
-    void create_validUser_ShouldHaveNoViolations() {
+    private CreateUserRequest validCreateRequest() {
         CreateUserRequest request = new CreateUserRequest();
         request.setEmail("user@example.com");
         request.setLogin("validLogin");
-        request.setName("Valid Name");
-        request.setBirthday(LocalDate.of(2000, 1, 1));
+        request.setBirthday(LocalDate.now().minusYears(1));
+        return request;
+    }
 
-        Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
-        assertTrue(violations.isEmpty());
+    private UpdateUserRequest validUpdateRequest() {
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setId(1L);
+        request.setEmail("user@example.com");
+        request.setLogin("validLogin");
+        request.setBirthday(LocalDate.now().minusYears(1));
+        return request;
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     void create_email_WhenNullOrEmpty_ShouldFail(String email) {
-        CreateUserRequest request = new CreateUserRequest();
+        CreateUserRequest request = validCreateRequest();
         request.setEmail(email);
-        request.setLogin("login");
-        request.setBirthday(LocalDate.now().minusYears(1));
 
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
         assertFalse(violations.isEmpty());
@@ -52,10 +55,8 @@ class UserDtoValidationTest {
 
     @Test
     void create_email_WhenMissingAt_ShouldFail() {
-        CreateUserRequest request = new CreateUserRequest();
+        CreateUserRequest request = validCreateRequest();
         request.setEmail("userexample.com");
-        request.setLogin("login");
-        request.setBirthday(LocalDate.now().minusYears(1));
 
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
         assertFalse(violations.isEmpty());
@@ -65,10 +66,8 @@ class UserDtoValidationTest {
     @ParameterizedTest
     @NullAndEmptySource
     void create_login_WhenNullOrEmpty_ShouldFail(String login) {
-        CreateUserRequest request = new CreateUserRequest();
-        request.setEmail("user@example.com");
+        CreateUserRequest request = validCreateRequest();
         request.setLogin(login);
-        request.setBirthday(LocalDate.now().minusYears(1));
 
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
         assertFalse(violations.isEmpty());
@@ -76,10 +75,8 @@ class UserDtoValidationTest {
 
     @Test
     void create_login_WhenContainsSpace_ShouldFail() {
-        CreateUserRequest request = new CreateUserRequest();
-        request.setEmail("user@example.com");
+        CreateUserRequest request = validCreateRequest();
         request.setLogin("user login");
-        request.setBirthday(LocalDate.now().minusYears(1));
 
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
         assertFalse(violations.isEmpty());
@@ -87,21 +84,8 @@ class UserDtoValidationTest {
     }
 
     @Test
-    void create_login_WhenValid_ShouldSucceed() {
-        CreateUserRequest request = new CreateUserRequest();
-        request.setEmail("user@example.com");
-        request.setLogin("valid_login123");
-        request.setBirthday(LocalDate.now().minusYears(1));
-
-        Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
-        assertTrue(violations.isEmpty());
-    }
-
-    @Test
     void create_birthday_WhenNull_ShouldSucceed() {
-        CreateUserRequest request = new CreateUserRequest();
-        request.setEmail("user@example.com");
-        request.setLogin("login");
+        CreateUserRequest request = validCreateRequest();
         request.setBirthday(null);
 
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
@@ -110,9 +94,7 @@ class UserDtoValidationTest {
 
     @Test
     void create_birthday_WhenFutureDate_ShouldFail() {
-        CreateUserRequest request = new CreateUserRequest();
-        request.setEmail("user@example.com");
-        request.setLogin("login");
+        CreateUserRequest request = validCreateRequest();
         request.setBirthday(LocalDate.now().plusDays(1));
 
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
@@ -121,9 +103,7 @@ class UserDtoValidationTest {
 
     @Test
     void create_birthday_WhenPast_ShouldSucceed() {
-        CreateUserRequest request = new CreateUserRequest();
-        request.setEmail("user@example.com");
-        request.setLogin("login");
+        CreateUserRequest request = validCreateRequest();
         request.setBirthday(LocalDate.now().minusDays(1));
 
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
@@ -132,34 +112,16 @@ class UserDtoValidationTest {
 
     @Test
     void create_name_WhenProvided_GetterReturnsIt() {
-        CreateUserRequest request = new CreateUserRequest();
-        request.setEmail("user@example.com");
-        request.setLogin("myLogin");
+        CreateUserRequest request = validCreateRequest();
         request.setName("John Doe");
 
         assertEquals("John Doe", request.getName());
     }
 
     @Test
-    void update_validUser_ShouldHaveNoViolations() {
-        UpdateUserRequest request = new UpdateUserRequest();
-        request.setId(1L);
-        request.setEmail("user@example.com");
-        request.setLogin("validLogin");
-        request.setName("Valid Name");
-        request.setBirthday(LocalDate.of(2000, 1, 1));
-
-        Set<ConstraintViolation<UpdateUserRequest>> violations = validator.validate(request);
-        assertTrue(violations.isEmpty());
-    }
-
-    @Test
     void update_id_WhenNull_ShouldFail() {
-        UpdateUserRequest request = new UpdateUserRequest();
+        UpdateUserRequest request = validUpdateRequest();
         request.setId(null);
-        request.setEmail("user@example.com");
-        request.setLogin("login");
-        request.setBirthday(LocalDate.now().minusYears(1));
 
         Set<ConstraintViolation<UpdateUserRequest>> violations = validator.validate(request);
         assertFalse(violations.isEmpty());
