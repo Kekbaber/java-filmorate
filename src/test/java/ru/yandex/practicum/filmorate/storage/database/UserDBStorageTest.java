@@ -32,7 +32,6 @@ class UserDBStorageTest {
     @Autowired
     private final JdbcTemplate jdbc;
 
-    // Вспомогательный метод для создания пользователя с параметрами
     private User create(String email, String login, String name, LocalDate birthday) {
         User user = new User();
         user.setEmail(email);
@@ -42,21 +41,13 @@ class UserDBStorageTest {
         return user;
     }
 
-    // Очистка таблицы перед каждым тестом (опционально, если тесты сами вставляют данные)
-    // Но можно и не очищать, если каждый тест начинается с пустой таблицы.
-    // Однако JdbcTest по умолчанию откатывает транзакцию после теста, но если вы явно вставляете
-    // данные через createUser(), они будут откачены. Очистка не обязательна, но оставим для ясности.
     @BeforeEach
     void cleanTable() {
         jdbc.execute("DELETE FROM users");
         jdbc.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
     }
 
-    // --------------------------------------------------------------
-    // Тесты, которые проверяют поведение на пустой таблице
-    // --------------------------------------------------------------
-
-    @Test
+   @Test
     void findAll_WhenEmpty_ShouldReturnEmpty() {
         Collection<User> users = userStorage.findAll();
         assertThat(users).isEmpty();
@@ -80,10 +71,6 @@ class UserDBStorageTest {
         assertThat(fetched.get().getEmail()).isEqualTo("new@example.com");
         assertThat(fetched.get().getLogin()).isEqualTo("newbie");
     }
-
-    // --------------------------------------------------------------
-    // Тесты, которым нужны данные в таблице (они сами их вставляют)
-    // --------------------------------------------------------------
 
     @Test
     void findAll_ShouldReturnAllSaved() {
@@ -137,10 +124,6 @@ class UserDBStorageTest {
         Optional<User> deleted = userStorage.findById(id);
         assertThat(deleted).isEmpty();
     }
-
-    // --------------------------------------------------------------
-    // Тесты для findAllByIds
-    // --------------------------------------------------------------
 
     @Test
     void findAllByIds_WhenEmptyIds_ShouldReturnEmptyList() {

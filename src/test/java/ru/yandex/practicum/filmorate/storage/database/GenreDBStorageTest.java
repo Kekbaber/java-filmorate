@@ -19,7 +19,9 @@ import ru.yandex.practicum.filmorate.storage.db.mappers.GenreRowMapper;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -177,5 +179,38 @@ class GenreDBStorageTest {
         List<Genre> genres = genreStorage.findGenresByFilmId(filmId);
         assertThat(genres).hasSize(2);
         assertThat(genres).extracting(Genre::getId).containsExactly(4L, 5L);
+    }
+
+    @Test
+    void findGenresByFilmIds_WhenEmptySet_ShouldReturnEmptyMap() {
+        Map<Long, List<Genre>> result = genreStorage.findGenresByFilmIds(Set.of());
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void findGenresByFilmIds_ShouldReturnMapOfFilmToGenres() {
+        long film1 = createTestFilm("Film 1");
+        long film2 = createTestFilm("Film 2");
+        genreStorage.addGenresToFilm(film1, List.of(1L, 2L, 3L));
+        genreStorage.addGenresToFilm(film2, List.of(4L, 5L));
+
+        Map<Long, List<Genre>> result = genreStorage.findGenresByFilmIds(Set.of(film1, film2));
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(film1)).extracting(Genre::getId).containsExactly(1L, 2L, 3L);
+        assertThat(result.get(film2)).extracting(Genre::getId).containsExactly(4L, 5L);
+    }
+
+    @Test
+    void findExistingGenreIds_ShouldReturnOnlyExistingIds() {
+        Set<Long> existing = genreStorage.findExistingGenreIds(Set.of(1L, 2L, 999L));
+
+        assertThat(existing).containsExactlyInAnyOrder(1L, 2L);
+    }
+
+    @Test
+    void findExistingGenreIds_WhenEmpty_ShouldReturnEmptySet() {
+        assertThat(genreStorage.findExistingGenreIds(Set.of())).isEmpty();
     }
 }

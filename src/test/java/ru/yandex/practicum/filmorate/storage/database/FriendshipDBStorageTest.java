@@ -35,7 +35,6 @@ class FriendshipDBStorageTest {
     @Autowired
     private final JdbcTemplate jdbc;
 
-    // Вспомогательный метод для создания пользователя
     private long createTestUser(String email, String login) {
         String sql = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -56,10 +55,6 @@ class FriendshipDBStorageTest {
         jdbc.execute("DELETE FROM users");
         jdbc.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
     }
-
-    // --------------------------------------------------------------
-    // Тесты для addRequest
-    // --------------------------------------------------------------
 
     @Test
     void addFriendRequest_ShouldAddUnconfirmedFriendRequest() {
@@ -126,10 +121,6 @@ class FriendshipDBStorageTest {
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
-    // --------------------------------------------------------------
-    // Тесты для findConfirmedFriends
-    // --------------------------------------------------------------
-
     @Test
     void findConfirmedFriends_WhenNoFriendIds_ShouldReturnEmptySet() {
         long user = createTestUser("alone@mail.ru", "alone");
@@ -152,10 +143,6 @@ class FriendshipDBStorageTest {
         assertThat(confirmed).containsExactly(user2).doesNotContain(user3);
     }
 
-    // --------------------------------------------------------------
-    // Тесты для findOutgoingRequests
-    // --------------------------------------------------------------
-
     @Test
     void findOutgoingRequests_ShouldReturnOnlyUnconfirmedRequests() {
         long user1 = createTestUser("u1@mail.ru", "u1");
@@ -175,10 +162,6 @@ class FriendshipDBStorageTest {
         Set<Long> outgoing = friendshipStorage.findOutgoingRequests(user);
         assertThat(outgoing).isEmpty();
     }
-
-    // --------------------------------------------------------------
-    // Тесты для findIncomingRequests
-    // --------------------------------------------------------------
 
     @Test
     void findIncomingRequests_ShouldReturnOnlyUnconfirmedRequestsWhereUserIsFriend() {
@@ -201,10 +184,6 @@ class FriendshipDBStorageTest {
         Set<Long> incoming = friendshipStorage.findIncomingRequests(user);
         assertThat(incoming).isEmpty();
     }
-
-    // --------------------------------------------------------------
-    // Тесты для removeFriendship
-    // --------------------------------------------------------------
 
     @Test
     void deleteFriendship_ShouldRemoveFriendship() {
@@ -248,10 +227,6 @@ class FriendshipDBStorageTest {
         Set<Long> outgoingFromUser2 = friendshipStorage.findOutgoingRequests(user2);
         assertThat(outgoingFromUser2).containsExactly(user1);
     }
-
-    // --------------------------------------------------------------
-    // Комбинированный сценарий: полный жизненный цикл дружбы
-    // --------------------------------------------------------------
 
     @Test
     void fullFriendshipLifeCycle() {

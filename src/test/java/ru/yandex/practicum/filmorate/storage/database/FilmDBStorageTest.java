@@ -80,10 +80,6 @@ class FilmDBStorageTest {
         jdbc.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
     }
 
-    // --------------------------------------------------------------
-    // Тесты для findAll
-    // --------------------------------------------------------------
-
     @Test
     void findAll_WhenEmpty_ShouldReturnEmpty() {
         Collection<Film> films = filmStorage.findAll();
@@ -103,10 +99,6 @@ class FilmDBStorageTest {
         assertThat(films).extracting(Film::getName).containsExactlyInAnyOrder("Film1", "Film2");
     }
 
-    // --------------------------------------------------------------
-    // Тесты для findById
-    // --------------------------------------------------------------
-
     @Test
     void findById_WhenNotFound_ShouldReturnEmpty() {
         Optional<Film> film = filmStorage.findById(999L);
@@ -116,17 +108,13 @@ class FilmDBStorageTest {
     @Test
     void findById_WhenExists_ShouldReturnFilm() {
         Film saved = filmStorage.create(createFilm("Findable", "Findable desc", LocalDate.of(1999, 5, 5), 110, 1));
-        Long id = saved.getId();
+        long id = saved.getId();
 
         Optional<Film> found = filmStorage.findById(id);
         assertThat(found).isPresent();
         assertThat(found.get().getName()).isEqualTo("Findable");
         assertThat(found.get().getMpaId()).isEqualTo(1L);
     }
-
-    // --------------------------------------------------------------
-    // Тесты для create
-    // --------------------------------------------------------------
 
     @Test
     void create_ShouldGenerateIdAndSaveFilm() {
@@ -147,14 +135,10 @@ class FilmDBStorageTest {
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
-    // --------------------------------------------------------------
-    // Тесты для update
-    // --------------------------------------------------------------
-
     @Test
     void update_ShouldChangeFields() {
         Film original = filmStorage.create(createFilm("Old Name", "Old desc", LocalDate.of(2000, 1, 1), 100, 1));
-        Long id = original.getId();
+        long id = original.getId();
 
         original.setName("New Name");
         original.setDescription("New desc");
@@ -186,14 +170,10 @@ class FilmDBStorageTest {
         assertThat(filmStorage.findAll()).isEmpty();
     }
 
-    // --------------------------------------------------------------
-    // Тесты для delete
-    // --------------------------------------------------------------
-
     @Test
     void delete_ShouldRemoveFilm() {
         Film toDelete = filmStorage.create(createFilm("ToDelete", "Delete me", LocalDate.of(2010, 10, 10), 80, 1));
-        Long id = toDelete.getId();
+        long id = toDelete.getId();
 
         filmStorage.delete(id);
 
@@ -207,10 +187,6 @@ class FilmDBStorageTest {
         // Просто проверяем, что всё нормально
         assertThat(filmStorage.findAll()).isEmpty();
     }
-
-    // --------------------------------------------------------------
-    // Тесты с проверкой бизнес-ограничений (CHECK в БД)
-    // --------------------------------------------------------------
 
     @Test
     void create_WhenReleaseDateTooEarly_ShouldThrowException() {
@@ -231,10 +207,6 @@ class FilmDBStorageTest {
         assertThatThrownBy(() -> filmStorage.create(invalidFilm))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
-
-    // --------------------------------------------------------------
-    // Тесты для findPopularFilms
-    // --------------------------------------------------------------
 
     @Test
     void findPopularFilms_WhenNoLikes_ShouldReturnAllFilms() {
@@ -307,7 +279,7 @@ class FilmDBStorageTest {
 
         List<Film> top1 = filmStorage.findPopularFilms(1);
         assertThat(top1).hasSize(1);
-        assertThat(top1.get(0).getId()).isEqualTo(film3);
+        assertThat(top1.getFirst().getId()).isEqualTo(film3);
 
         List<Film> top2 = filmStorage.findPopularFilms(2);
         assertThat(top2).hasSize(2);

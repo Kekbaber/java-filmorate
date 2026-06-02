@@ -14,7 +14,9 @@ import ru.yandex.practicum.filmorate.storage.db.mappers.MpaRowMapper;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -69,5 +71,29 @@ class MpaDBStorageTest {
 
         Optional<Mpa> negativeId = mpaStorage.findById(-1L);
         assertThat(negativeId).isEmpty();
+    }
+
+    @Test
+    void findAllByIds_WhenEmptySet_ShouldReturnEmptyMap() {
+        Map<Long, Mpa> result = mpaStorage.findAllByIds(Set.of());
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void findAllByIds_ShouldReturnMapOfMpaById() {
+        Map<Long, Mpa> result = mpaStorage.findAllByIds(Set.of(1L, 3L, 5L));
+
+        assertThat(result).hasSize(3);
+        assertThat(result.get(1L).getName()).isEqualTo("G");
+        assertThat(result.get(3L).getName()).isEqualTo("PG-13");
+        assertThat(result.get(5L).getName()).isEqualTo("NC-17");
+    }
+
+    @Test
+    void findAllByIds_WhenSomeIdsNotExist_ShouldReturnOnlyExisting() {
+        Map<Long, Mpa> result = mpaStorage.findAllByIds(Set.of(1L, 999L));
+
+        assertThat(result).hasSize(1).containsKey(1L);
     }
 }

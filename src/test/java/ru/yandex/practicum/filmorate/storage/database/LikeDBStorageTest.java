@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -75,10 +76,6 @@ class LikeDBStorageTest {
         jdbc.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
     }
 
-    // --------------------------------------------------------------
-    // Тесты метода findById (получение всех лайков фильма)
-    // --------------------------------------------------------------
-
     @Test
     void findUserIdsByFilmId_WhenNoLikes_ShouldReturnEmptySet() {
         long filmId = createTestFilm("Film without likes");
@@ -98,10 +95,6 @@ class LikeDBStorageTest {
         Set<Long> userIds = likeStorage.findUserIdsByFilmId(filmId);
         assertThat(userIds).hasSize(2).containsExactlyInAnyOrder(user1, user2);
     }
-
-    // --------------------------------------------------------------
-    // Тесты метода add
-    // --------------------------------------------------------------
 
     @Test
     void addLike_ShouldInsertLike() {
@@ -132,7 +125,7 @@ class LikeDBStorageTest {
         long userId = createTestUser("filmless@mail.ru", "filmless");
 
         assertThatThrownBy(() -> likeStorage.addLike(nonExistentFilmId, userId))
-                .isInstanceOf(Exception.class); // нарушение внешнего ключа, может быть DataIntegrityViolationException
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -141,12 +134,8 @@ class LikeDBStorageTest {
         long nonExistentUserId = 999L;
 
         assertThatThrownBy(() -> likeStorage.addLike(filmId, nonExistentUserId))
-                .isInstanceOf(Exception.class);
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
-
-    // --------------------------------------------------------------
-    // Тесты метода remove
-    // --------------------------------------------------------------
 
     @Test
     void delete_ShouldDeleteLike() {
