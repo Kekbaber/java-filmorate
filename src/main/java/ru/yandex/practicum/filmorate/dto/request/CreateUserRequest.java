@@ -22,8 +22,4 @@ public class CreateUserRequest {
 
     @Past(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
-
-    public String getName() {
-        return (name == null || name.isBlank()) ? login : name;
-    }
 }
