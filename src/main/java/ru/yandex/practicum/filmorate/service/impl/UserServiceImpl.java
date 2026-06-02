@@ -45,37 +45,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse create(@Valid CreateUserRequest request) {
-        log.info("Create user: login={}, email={}", request.getLogin(), request.getEmail());
+    public UserResponse create(CreateUserRequest request) {
+        log.debug("Create user: login={}, email={}", request.getLogin(), request.getEmail());
         User user = userMapper.toEntity(request);
         User created = userStorage.create(user);
-        log.info("Created user with id={}", created.getId());
+        log.debug("Created user with id={}", created.getId());
         return userMapper.toResponse(created);
     }
 
     @Override
     @Transactional
     public UserResponse update(UpdateUserRequest request) {
-        log.info("Update user id={}, login={}", request.getId(), request.getLogin());
+        log.debug("Update user id={}, login={}", request.getId(), request.getLogin());
         if (userStorage.findById(request.getId()).isEmpty()) {
             log.warn("Attempt to update non-existing user id={}", request.getId());
             throw new NotFoundException("Пользователь с id = " + request.getId() + " не найден");
         }
         User user = userMapper.toEntity(request);
         User updated = userStorage.update(user);
-        log.info("Updated user id={}", updated.getId());
+        log.debug("Updated user id={}", updated.getId());
         return userMapper.toResponse(updated);
     }
 
     @Override
     @Transactional
     public void delete(long id) {
-        log.info("Delete user id={}", id);
+        log.debug("Delete user id={}", id);
         if (userStorage.findById(id).isEmpty()) {
             log.warn("Attempt to delete non-existing user id={}", id);
         }
         userStorage.delete(id);
-        log.info("Deleted user id={}", id);
+        log.debug("Deleted user id={}", id);
     }
 
     @Override

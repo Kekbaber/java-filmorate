@@ -22,25 +22,23 @@ public class LikeServiceImpl implements LikeService {
     @Override
     @Transactional
     public void addLike(long filmId, long userId) {
-        log.info("Add like: filmId={}, userId={}", filmId, userId);
-        log.debug("Checking existence of film {} and user {}", filmId, userId);
+        log.debug("Add like: filmId={}, userId={}", filmId, userId);
         filmService.findById(filmId);
         userService.findById(userId);
         likeStorage.addLike(filmId, userId);
-        log.debug("Like added successfully for filmId={}, userId={}", filmId, userId);
+        log.debug("Like added: filmId={}, userId={}", filmId, userId);
     }
 
     @Override
     @Transactional
     public void deleteLike(long filmId, long userId) {
-        log.info("Remove like: filmId={}, userId={}", filmId, userId);
-        log.debug("Checking existence of film {} and user {}", filmId, userId);
+        log.debug("Remove like: filmId={}, userId={}", filmId, userId);
         filmService.findById(filmId);
         userService.findById(userId);
         if (!likeStorage.findUserIdsByFilmId(filmId).contains(userId)) {
             log.warn("Attempt to remove non-existing like: filmId={}, userId={}", filmId, userId);
         }
         likeStorage.delete(filmId, userId);
-        log.debug("Like removed successfully for filmId={}, userId={}", filmId, userId);
+        log.debug("Like removed: filmId={}, userId={}", filmId, userId);
     }
 }

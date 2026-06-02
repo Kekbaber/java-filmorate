@@ -23,6 +23,7 @@ public class LikeDBStorage extends BaseStorage<Like> implements LikeStorage {
 
     @Override
     public Set<Long> findUserIdsByFilmId(long filmId) {
+        log.debug("DB: find likes by filmId={}", filmId);
         return jdbc.query(LikeQueries.FIND_BY_ID,
                         (rs, rowNum) -> rs.getLong("user_id"), filmId)
                 .stream()
@@ -31,11 +32,13 @@ public class LikeDBStorage extends BaseStorage<Like> implements LikeStorage {
 
     @Override
     public void addLike(long filmId, long userId) {
+        log.debug("DB: add like filmId={}, userId={}", filmId, userId);
         executeUpdate(LikeQueries.INSERT_LIKE, filmId, userId);
     }
 
     @Override
     public void delete(long filmId, long userId) {
+        log.debug("DB: remove like filmId={}, userId={}", filmId, userId);
         delete(LikeQueries.DELETE_LIKE, filmId, userId);
     }
 }

@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Profile("inmemory")
@@ -86,5 +87,18 @@ public class InMemoryGenreStorage implements GenreStorage {
         } else {
             log.debug("No genres to delete for film id={}", filmId);
         }
+    }
+
+    @Override
+    public Map<Long, List<Genre>> findGenresByFilmIds(Set<Long> filmIds) {
+        return filmIds.stream()
+                .collect(Collectors.toMap(id -> id, this::findGenresByFilmId));
+    }
+
+    @Override
+    public Set<Long> findExistingGenreIds(Set<Long> ids) {
+        return ids.stream()
+                .filter(genres::containsKey)
+                .collect(Collectors.toSet());
     }
 }

@@ -23,29 +23,34 @@ public class FriendshipDBStorage extends BaseStorage<Friendship> implements Frie
 
     @Override
     public Set<Long> findConfirmedFriendIds(long userId) {
+        log.debug("DB: find confirmed friends of userId={}", userId);
         return new HashSet<>(jdbc.query(FriendshipQueries.FIND_CONFIRMED_FRIENDS,
                 (rs, rowNum) -> rs.getLong("friend_id"), userId));
     }
 
     @Override
     public Set<Long> findOutgoingRequests(long userId) {
+        log.debug("DB: find outgoing requests of userId={}", userId);
         return new HashSet<>(jdbc.query(FriendshipQueries.FIND_OUTGOING_REQUESTS,
                 (rs, rowNum) -> rs.getLong("friend_id"), userId));
     }
 
     @Override
     public Set<Long> findIncomingRequests(long userId) {
+        log.debug("DB: find incoming requests for userId={}", userId);
         return new HashSet<>(jdbc.query(FriendshipQueries.FIND_INCOMING_REQUESTS,
                 (rs, rowNum) -> rs.getLong("user_id"), userId));
     }
 
     @Override
     public void addFriendRequest(long userId, long friendId, boolean confirmed) {
+        log.debug("DB: add friend request userId={}, friendId={}, confirmed={}", userId, friendId, confirmed);
         jdbc.update(FriendshipQueries.ADD_REQUEST, userId, friendId, confirmed);
     }
 
     @Override
     public void deleteFriendship(long userId, long friendId) {
+        log.debug("DB: delete friendship userId={}, friendId={}", userId, friendId);
         jdbc.update(FriendshipQueries.REMOVE_FRIENDSHIP, userId, friendId);
     }
 }

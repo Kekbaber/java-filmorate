@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Profile("inmemory")
@@ -46,5 +47,12 @@ public class InMemoryMpaStorage implements MpaStorage {
     public Optional<Mpa> findById(long id) {
         log.debug("Find MPA rating by id={} in in-memory storage", id);
         return Optional.ofNullable(ratings.get(id));
+    }
+
+    @Override
+    public Map<Long, Mpa> findAllByIds(Set<Long> ids) {
+        return ids.stream()
+                .filter(ratings::containsKey)
+                .collect(Collectors.toMap(id -> id, ratings::get));
     }
 }

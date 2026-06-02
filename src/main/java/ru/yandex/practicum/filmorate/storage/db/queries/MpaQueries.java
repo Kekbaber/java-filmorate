@@ -9,4 +9,6 @@ public final class MpaQueries {
     public static final String FIND_ALL = "SELECT * FROM ratings";
 
     public static final String FIND_BY_ID = "SELECT * FROM ratings where id = ?";
+
+    public static final String FIND_BY_IDS = "SELECT * FROM ratings WHERE id IN (:ids)";
 }

@@ -45,7 +45,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         long id = idGenerator.getNextId();
         film.setId(id);
         films.put(id, film);
-        log.info("Storage: added film id={}, name={}, releaseDate={}", id, film.getName(), film.getReleaseDate());
+        log.debug("Storage: added film id={}, name={}, releaseDate={}", id, film.getName(), film.getReleaseDate());
         return film;
     }
 
@@ -53,14 +53,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film update(Film film) {
         long id = film.getId();
         films.put(id, film);
-        log.info("Storage: updated film id={}, name={}", id, film.getName());
+        log.debug("Storage: updated film id={}, name={}", id, film.getName());
         return film;
     }
 
     @Override
     public void delete(long id) {
         Film film = films.get(id);
-        log.info("Storage: removed film id={}, name={}", id, film.getName());
+        log.debug("Storage: removed film id={}, name={}", id, film.getName());
         films.remove(id);
     }
 

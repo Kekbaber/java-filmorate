@@ -1,22 +1,29 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import ru.yandex.practicum.filmorate.exception.model.InternalServerException;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 public class BaseStorage<T> {
 
     protected final JdbcTemplate jdbc;
+    protected final NamedParameterJdbcTemplate namedJdbc;
     protected final RowMapper<T> mapper;
+
+    public BaseStorage(JdbcTemplate jdbc, RowMapper<T> mapper) {
+        this.jdbc = jdbc;
+        this.namedJdbc = new NamedParameterJdbcTemplate(jdbc);
+        this.mapper = mapper;
+    }
 
     protected Optional<T> findOne(String query, Object... params) {
         try {
@@ -51,6 +58,14 @@ public class BaseStorage<T> {
             }
             return ps;
         });
+    }
+
+    protected List<T> findMany(String query, Map<String, ?> params) {
+        return namedJdbc.query(query, params, mapper);
+    }
+
+    protected List<Long> findLongs(String query, Map<String, ?> params) {
+        return namedJdbc.queryForList(query, params, Long.class);
     }
 
     protected long insert(String query, Object... params) {

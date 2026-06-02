@@ -23,11 +23,13 @@ public class FilmDBStorage extends BaseStorage<Film> implements FilmStorage {
 
     @Override
     public List<Film> findAll() {
+        log.debug("DB: find all films");
         return findMany(FilmQueries.FIND_ALL);
     }
 
     @Override
     public Optional<Film> findById(long id) {
+        log.debug("DB: find film by id={}", id);
         return findOne(FilmQueries.FIND_BY_ID, id);
     }
 
@@ -41,7 +43,7 @@ public class FilmDBStorage extends BaseStorage<Film> implements FilmStorage {
                 film.getMpaId()
         );
         film.setId(id);
-
+        log.debug("DB: created film id={}", id);
         return film;
     }
 
@@ -55,16 +57,19 @@ public class FilmDBStorage extends BaseStorage<Film> implements FilmStorage {
                 film.getMpaId(),
                 film.getId()
         );
+        log.debug("DB: updated film id={}", film.getId());
         return film;
     }
 
     @Override
     public void delete(long id) {
         delete(FilmQueries.DELETE_FILM, id);
+        log.debug("DB: deleted film id={}", id);
     }
 
     @Override
     public List<Film> findPopularFilms(long limit) {
+        log.debug("DB: find popular films, limit={}", limit);
         return findMany(FilmQueries.FIND_POPULAR_FILMS, limit);
     }
 }

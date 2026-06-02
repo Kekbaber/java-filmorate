@@ -27,7 +27,7 @@ public class UserController {
     public List<UserResponse> findAll() {
         log.debug("GET /users");
         List<UserResponse> users = userService.findAll();
-        log.debug("GET /user -> returned {} users", users.size());
+        log.debug("GET /users -> returned {} users", users.size());
         return users;
     }
 
@@ -66,8 +66,12 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{friendId}/confirm")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void confirmFriendRequest(@PathVariable long id, @PathVariable long friendId) {
-        friendshipService.confirmFriendRequest(id, friendId);
+    public void confirmFriendRequest(
+            @PathVariable(name = "id") @Positive long userId,
+            @PathVariable @Positive long friendId
+    ) {
+        log.info("PUT /users/{}/friends/{}/confirm", userId, friendId);
+        friendshipService.confirmFriendRequest(userId, friendId);
     }
 
     @GetMapping("/{id}/friends")
@@ -79,13 +83,15 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends/outgoing")
-    public List<UserResponse> getOutgoingRequests(@PathVariable long id) {
-        return friendshipService.findOutgoingRequests(id);
+    public List<UserResponse> getOutgoingRequests(@PathVariable(name = "id") @Positive long userId) {
+        log.info("GET /users/{}/friends/outgoing", userId);
+        return friendshipService.findOutgoingRequests(userId);
     }
 
     @GetMapping("/{id}/friends/incoming")
-    public List<UserResponse> getIncomingRequests(@PathVariable long id) {
-        return friendshipService.findIncomingRequests(id);
+    public List<UserResponse> getIncomingRequests(@PathVariable(name = "id") @Positive long userId) {
+        log.info("GET /users/{}/friends/incoming", userId);
+        return friendshipService.findIncomingRequests(userId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
@@ -100,8 +106,8 @@ public class UserController {
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<UserResponse> getCommonFriends(
-            @PathVariable long id,
-            @PathVariable long otherId
+            @PathVariable @Positive long id,
+            @PathVariable @Positive long otherId
     ) {
         log.debug("GET /users/{}/friends/common/{}", id, otherId);
         List<UserResponse> commonFriends = friendshipService.findCommonFriends(id, otherId);

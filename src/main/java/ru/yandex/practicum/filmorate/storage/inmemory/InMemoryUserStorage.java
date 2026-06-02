@@ -38,7 +38,7 @@ public class InMemoryUserStorage implements UserStorage {
         long id = idGenerator.getNextId();
         user.setId(id);
         users.put(id, user);
-        log.info("Storage: added user id={}, login={}", id, user.getLogin());
+        log.debug("Storage: added user id={}, login={}", id, user.getLogin());
         return user;
     }
 
@@ -46,14 +46,14 @@ public class InMemoryUserStorage implements UserStorage {
     public User update(User user) {
         long id = user.getId();
         users.put(user.getId(), user);
-        log.info("Storage: updated user id={}, login={}", id, user.getLogin());
+        log.debug("Storage: updated user id={}, login={}", id, user.getLogin());
         return user;
     }
 
     @Override
     public void delete(long id) {
         User user = users.get(id);
-        log.info("Storage: removed user id={}, login={}", id, user.getLogin());
+        log.debug("Storage: removed user id={}, login={}", id, user.getLogin());
         users.remove(id);
     }
 

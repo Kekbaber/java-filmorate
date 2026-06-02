@@ -10,12 +10,17 @@ import ru.yandex.practicum.filmorate.dto.response.FilmResponse;
 import ru.yandex.practicum.filmorate.exception.model.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -33,9 +38,7 @@ public class FilmServiceImpl implements FilmService {
         log.debug("Find all films");
         List<Film> films = filmStorage.findAll();
         log.debug("Found {} films", films.size());
-        return films.stream()
-                .map(this::buildFilmResponse)
-                .toList();
+        return buildFilmResponses(films);
     }
 
     @Override
@@ -48,45 +51,43 @@ public class FilmServiceImpl implements FilmService {
     @Override
     @Transactional
     public FilmResponse create(CreateFilmRequest request) {
-        log.info("Create film: name={}, releaseDate={}", request.getName(), request.getReleaseDate());
+        log.debug("Create film: name={}, releaseDate={}", request.getName(), request.getReleaseDate());
         if (request.getMpa() != null) {
             mpaService.findById(request.getMpa().getId());
         }
         Film film = filmMapper.toEntity(request);
         Film created = filmStorage.create(film);
         genreService.updateFilmGenres(film.getId(), request.getGenres());
-        log.info("Created film with id={}", created.getId());
+        log.debug("Created film with id={}", created.getId());
         return buildFilmResponse(created);
     }
 
     @Override
     @Transactional
     public FilmResponse update(UpdateFilmRequest request) {
-        log.info("Update film id={}, name={}", request.getId(), request.getName());
+        log.debug("Update film id={}, name={}", request.getId(), request.getName());
         findById(request.getId());
         Film film = filmMapper.toEntity(request);
         Film updated = filmStorage.update(film);
         genreService.updateFilmGenres(film.getId(), request.getGenres());
-        log.info("Updated film id={}", updated.getId());
+        log.debug("Updated film id={}", updated.getId());
         return buildFilmResponse(updated);
     }
 
     @Override
     @Transactional
     public void delete(long id) {
-        log.info("Delete film id={}", id);
+        log.debug("Delete film id={}", id);
         findById(id);
         filmStorage.delete(id);
-        log.info("Deleted film id={}", id);
+        log.debug("Deleted film id={}", id);
     }
 
     @Override
     public List<FilmResponse> findPopularFilms(long limit) {
-        List<FilmResponse> responses = filmStorage.findPopularFilms(limit).stream()
-                .map(this::buildFilmResponse)
-                .toList();
-        log.info("Found {} films", responses.size());
-        return responses;
+        List<Film> films = filmStorage.findPopularFilms(limit);
+        log.debug("Found {} films", films.size());
+        return buildFilmResponses(films);
     }
 
     private FilmResponse buildFilmResponse(Film film) {
@@ -96,5 +97,26 @@ public class FilmServiceImpl implements FilmService {
         response.setMpa(mpaService.findById(mpaId));
         response.setGenres(genreService.findGenresForFilm(filmId));
         return response;
+    }
+
+    private List<FilmResponse> buildFilmResponses(List<Film> films) {
+        if (films.isEmpty()) {
+            return List.of();
+        }
+
+        Set<Long> filmIds = films.stream().map(Film::getId).collect(Collectors.toSet());
+        Set<Long> mpaIds = films.stream().map(Film::getMpaId).collect(Collectors.toSet());
+
+        Map<Long, Mpa> mpaMap = mpaService.findAllByIds(mpaIds);
+        Map<Long, List<Genre>> genresMap = genreService.findGenresByFilmIds(filmIds);
+
+        return films.stream()
+                .map(film -> {
+                    FilmResponse response = filmMapper.toResponse(film);
+                    response.setMpa(mpaMap.get(film.getMpaId()));
+                    response.setGenres(genresMap.getOrDefault(film.getId(), List.of()));
+                    return response;
+                })
+                .toList();
     }
 }

@@ -46,19 +46,19 @@ public class InMemoryFriendshipStorage implements FriendshipStorage {
 
     @Override
     public void addFriendRequest(long userId, long friendId, boolean confirmed) {
-        log.info("Storage: add request {} -> {} confirmed={}", userId, friendId, confirmed);
+        log.debug("Storage: add request {} -> {} confirmed={}", userId, friendId, confirmed);
         // Удаляем возможную предыдущую запись с таким же направлением
         friendships.removeIf(f -> f.getUserId() == userId && f.getFriendId() == friendId);
         friendships.add(new Friendship(userId, friendId, confirmed));
-        log.trace("Current friendships size = {}", friendships.size());
+        log.debug("Current friendships size = {}", friendships.size());
     }
 
     @Override
     public void deleteFriendship(long userId, long friendId) {
-        log.info("Storage: remove all relations between {} and {}", userId, friendId);
+        log.debug("Storage: remove all relations between {} and {}", userId, friendId);
         // Удаляем записи в обе стороны
         friendships.removeIf(f -> (f.getUserId() == userId && f.getFriendId() == friendId) ||
                 (f.getUserId() == friendId && f.getFriendId() == userId));
-        log.trace("Current friendships size = {}", friendships.size());
+        log.debug("Current friendships size = {}", friendships.size());
     }
 }

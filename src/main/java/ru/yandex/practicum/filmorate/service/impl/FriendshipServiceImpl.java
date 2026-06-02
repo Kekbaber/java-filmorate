@@ -27,19 +27,20 @@ public class FriendshipServiceImpl implements FriendshipService {
     @Override
     @Transactional
     public void addFriendRequest(long userId, long friendId) {
-        log.info("Creating new friendship between {} and {}", userId, friendId);
+        log.debug("Add friend request: userId={}, friendId={}", userId, friendId);
         userService.findById(userId);
         userService.findById(friendId);
         if (friendshipStorage.findConfirmedFriendIds(userId).contains(friendId)) {
             throw new DuplicateFriendshipException("Вы уже друзья");
         }
         friendshipStorage.addFriendRequest(userId, friendId, true);
-        log.info("Пользователь {} подписан на {}", userId, friendId);
+        log.debug("Friend request added: userId={}, friendId={}", userId, friendId);
     }
 
     @Override
     @Transactional
     public void confirmFriendRequest(long userId, long friendId) {
+        log.debug("Confirm friendship: userId={}, friendId={}", userId, friendId);
         userService.findById(userId);
         userService.findById(friendId);
         if (!friendshipStorage.findIncomingRequests(userId).contains(friendId)) {
@@ -48,49 +49,53 @@ public class FriendshipServiceImpl implements FriendshipService {
         friendshipStorage.deleteFriendship(friendId, userId);
         friendshipStorage.addFriendRequest(userId, friendId, true);
         friendshipStorage.addFriendRequest(friendId, userId, true);
-        log.info("Пользователь {} подтвердил дружбу с {}", userId, friendId);
+        log.debug("Friendship confirmed: userId={}, friendId={}", userId, friendId);
     }
 
     @Override
     @Transactional
     public void deleteFriend(long userId, long friendId) {
-        log.debug("Removing friendship between {} and {}", userId, friendId);
+        log.debug("Delete friend: userId={}, friendId={}", userId, friendId);
         userService.findById(userId);
         userService.findById(friendId);
         friendshipStorage.deleteFriendship(userId, friendId);
-        log.debug("Friendship removed from storage for {} <-> {}", userId, friendId);
+        log.debug("Friend deleted: userId={}, friendId={}", userId, friendId);
     }
 
     @Override
     public List<UserResponse> findOutgoingRequests(long userId) {
         userService.findById(userId);
         Set<Long> requestIds = friendshipStorage.findOutgoingRequests(userId);
-        log.debug("Returned {} friends for user {}", requestIds.size(), userId);
+        log.debug("Found {} outgoing requests for userId={}", requestIds.size(), userId);
         return userService.findAllByIds(requestIds);
     }
 
     @Override
     public List<UserResponse> findIncomingRequests(long userId) {
+        log.debug("Get incoming requests for userId={}", userId);
         userService.findById(userId);
         Set<Long> requestIds = friendshipStorage.findIncomingRequests(userId);
+        log.debug("Found {} incoming requests for userId={}", requestIds.size(), userId);
         return userService.findAllByIds(requestIds);
     }
 
     @Override
     public List<UserResponse> findConfirmedFriends(long userId) {
+        log.debug("Get confirmed friends for userId={}", userId);
         userService.findById(userId);
         Set<Long> friendIds = friendshipStorage.findConfirmedFriendIds(userId);
+        log.debug("Found {} confirmed friends for userId={}", friendIds.size(), userId);
         return userService.findAllByIds(friendIds);
     }
 
     @Override
     public List<UserResponse> findCommonFriends(long userId, long otherId) {
-        log.info("Get common friends between users {} and {}", userId, otherId);
+        log.debug("Get common friends: userId={}, otherId={}", userId, otherId);
         userService.findById(userId);
         userService.findById(otherId);
         Set<Long> userIds = friendshipStorage.findConfirmedFriendIds(userId);
         Set<Long> otherIds = friendshipStorage.findConfirmedFriendIds(otherId);
-        log.debug("Friends of {}: {}, friends of {}: {}", userId, userIds, otherId, otherIds);
+        log.debug("Friends of userId={}: {}, friends of otherId={}: {}", userId, userIds, otherId, otherIds);
         Set<Long> commonIds = userIds.stream()
                 .filter(otherIds::contains)
                 .collect(Collectors.toSet());

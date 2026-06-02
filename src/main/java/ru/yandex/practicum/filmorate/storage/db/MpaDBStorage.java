@@ -9,8 +9,8 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.db.queries.MpaQueries;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @Profile("database")
@@ -23,11 +23,24 @@ public class MpaDBStorage extends BaseStorage<Mpa> implements MpaStorage {
 
     @Override
     public List<Mpa> findAll() {
+        log.debug("DB: find all MPA ratings");
         return findMany(MpaQueries.FIND_ALL);
     }
 
     @Override
     public Optional<Mpa> findById(long id) {
+        log.debug("DB: find MPA rating by id={}", id);
         return findOne(MpaQueries.FIND_BY_ID, id);
+    }
+
+    @Override
+    public Map<Long, Mpa> findAllByIds(Set<Long> ids) {
+        log.debug("DB: find MPA ratings by ids: {}", ids);
+        if (ids == null || ids.isEmpty()) {
+            return Map.of();
+        }
+        return findMany(MpaQueries.FIND_BY_IDS, Map.of("ids", ids))
+                .stream()
+                .collect(Collectors.toMap(Mpa::getId, mpa -> mpa));
     }
 }
