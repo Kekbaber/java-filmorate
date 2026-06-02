@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.db.mappers;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
@@ -7,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Profile("database")
 @Component
 public class UserRowMapper implements RowMapper<User> {
 
