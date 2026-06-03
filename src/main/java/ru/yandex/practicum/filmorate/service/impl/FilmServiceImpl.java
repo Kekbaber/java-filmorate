@@ -98,12 +98,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     private FilmResponse buildFilmResponse(Film film) {
-        FilmResponse response = filmMapper.toResponse(film);
-        long filmId = film.getId();
-        long mpaId = film.getMpaId();
-        response.setMpa(mpaService.findById(mpaId));
-        response.setGenres(genreService.findGenresForFilm(filmId));
-        return response;
+        return buildFilmResponses(List.of(film)).getFirst();
     }
 
     private List<FilmResponse> buildFilmResponses(List<Film> films) {
