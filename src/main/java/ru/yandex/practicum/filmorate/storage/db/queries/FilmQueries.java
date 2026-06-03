@@ -8,7 +8,7 @@ public final class FilmQueries {
 
     public static final String FIND_ALL = "SELECT * FROM films";
 
-    public static final String FIND_BY_ID = "SELECT * FROM FILMS WHERE id = ?";
+    public static final String FIND_BY_ID = "SELECT * FROM films WHERE id = ?";
 
     public static final String INSERT_FILM =
             "INSERT INTO films(name, description, release_date, duration, rating_id) VALUES(?, ?, ?, ?, ?)";

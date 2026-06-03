@@ -17,7 +17,9 @@ public class FilmMapper {
         film.setDescription(request.getDescription());
         film.setReleaseDate(request.getReleaseDate());
         film.setDuration(request.getDuration());
-        film.setMpaId(request.getMpa().getId());
+        if (request.getMpa() != null) {
+            film.setMpaId(request.getMpa().getId());
+        }
         return film;
     }
 
@@ -28,7 +30,9 @@ public class FilmMapper {
         film.setDescription(request.getDescription());
         film.setReleaseDate(request.getReleaseDate());
         film.setDuration(request.getDuration());
-        film.setMpaId(request.getMpa().getId());
+        if (request.getMpa() != null) {
+            film.setMpaId(request.getMpa().getId());
+        }
         return film;
     }
 

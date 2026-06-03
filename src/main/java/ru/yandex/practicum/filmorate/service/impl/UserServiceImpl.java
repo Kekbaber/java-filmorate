@@ -70,9 +70,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void delete(long id) {
         log.debug("Delete user id={}", id);
-        if (userStorage.findById(id).isEmpty()) {
-            log.warn("Attempt to delete non-existing user id={}", id);
-        }
+        findById(id);
         userStorage.delete(id);
         log.debug("Deleted user id={}", id);
     }
