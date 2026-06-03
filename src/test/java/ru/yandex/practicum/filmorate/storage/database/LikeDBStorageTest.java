@@ -19,7 +19,6 @@ import ru.yandex.practicum.filmorate.storage.db.mappers.LikeRowMapper;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
