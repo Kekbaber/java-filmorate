@@ -22,11 +22,12 @@
 
 #### Топ N наиболее популярных фильмов (по количеству лайков):
 ```sql
-SELECT film_id, COUNT(*) as like_count
-FROM likes
-GROUP BY film_id
-ORDER BY like_count DESC, film_id ASC
-LIMIT 1000 -- N = 1000
+SELECT f.* 
+FROM films f 
+LEFT JOIN likes l ON f.id = l.film_id 
+GROUP BY f.id 
+ORDER BY COUNT(l.user_id) 
+DESC LIMIT ?
 ```
 
 #### Найти фильм по `film_id`:
