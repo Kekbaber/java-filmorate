@@ -1,17 +1,16 @@
 package ru.yandex.practicum.filmorate.mapper;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.dto.request.CreateFilmRequest;
 import ru.yandex.practicum.filmorate.dto.request.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.dto.response.FilmResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 
-@Component
-@RequiredArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FilmMapper {
 
-    public Film toEntity(CreateFilmRequest request) {
+    public static Film toEntity(CreateFilmRequest request) {
         Film film = new Film();
         film.setName(request.getName());
         film.setDescription(request.getDescription());
@@ -23,7 +22,7 @@ public class FilmMapper {
         return film;
     }
 
-    public Film toEntity(UpdateFilmRequest request) {
+    public static Film toEntity(UpdateFilmRequest request) {
         Film film = new Film();
         film.setId(request.getId());
         film.setName(request.getName());
@@ -36,7 +35,7 @@ public class FilmMapper {
         return film;
     }
 
-    public FilmResponse toResponse(Film film) {
+    public static FilmResponse toResponse(Film film) {
         FilmResponse response = new FilmResponse();
         response.setId(film.getId());
         response.setName(film.getName());

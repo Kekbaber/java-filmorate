@@ -1,17 +1,16 @@
 package ru.yandex.practicum.filmorate.mapper;
 
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.request.CreateUserRequest;
 import ru.yandex.practicum.filmorate.dto.request.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.response.UserResponse;
 import ru.yandex.practicum.filmorate.model.User;
 
-@Component
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserMapper {
 
-    public User toEntity(CreateUserRequest request) {
+    public static User toEntity(CreateUserRequest request) {
         if (request == null) return null;
         User user = new User();
         user.setEmail(request.getEmail());
@@ -21,7 +20,7 @@ public class UserMapper {
         return user;
     }
 
-    public User toEntity(UpdateUserRequest request) {
+    public static User toEntity(UpdateUserRequest request) {
         if (request == null) return null;
         User user = new User();
         user.setId(request.getId());
@@ -32,7 +31,7 @@ public class UserMapper {
         return user;
     }
 
-    public UserResponse toResponse(User user) {
+    public static UserResponse toResponse(User user) {
         if (user == null) return null;
         UserResponse response = new UserResponse();
         response.setId(user.getId());
@@ -44,7 +43,7 @@ public class UserMapper {
         return response;
     }
 
-    public String checkName(String name, String login) {
+    public static String checkName(String name, String login) {
         return (name == null || name.isBlank()) ? login : name;
     }
 }

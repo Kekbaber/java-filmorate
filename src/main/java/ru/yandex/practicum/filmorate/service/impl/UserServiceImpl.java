@@ -23,13 +23,12 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
-    private final UserMapper userMapper;
 
     @Override
     public List<UserResponse> findAll() {
         log.debug("Find all users");
         List<UserResponse> users = userStorage.findAll().stream()
-                .map(userMapper::toResponse)
+                .map(UserMapper::toResponse)
                 .toList();
         log.debug("Found {} users", users.size());
         return users;
@@ -38,7 +37,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse findById(long id) {
         log.debug("Find user by id={}", id);
-        return userStorage.findById(id).map(userMapper::toResponse)
+        return userStorage.findById(id).map(UserMapper::toResponse)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + id + " не найден"));
     }
 
@@ -46,10 +45,10 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse create(CreateUserRequest request) {
         log.debug("Create user: login={}, email={}", request.getLogin(), request.getEmail());
-        User user = userMapper.toEntity(request);
+        User user = UserMapper.toEntity(request);
         User created = userStorage.create(user);
         log.debug("Created user with id={}", created.getId());
-        return userMapper.toResponse(created);
+        return UserMapper.toResponse(created);
     }
 
     @Override
@@ -60,10 +59,10 @@ public class UserServiceImpl implements UserService {
             log.warn("Attempt to update non-existing user id={}", request.getId());
             throw new NotFoundException("Пользователь с id = " + request.getId() + " не найден");
         }
-        User user = userMapper.toEntity(request);
+        User user = UserMapper.toEntity(request);
         User updated = userStorage.update(user);
         log.debug("Updated user id={}", updated.getId());
-        return userMapper.toResponse(updated);
+        return UserMapper.toResponse(updated);
     }
 
     @Override
@@ -82,7 +81,7 @@ public class UserServiceImpl implements UserService {
         }
         List<User> users = userStorage.findAllByIds(ids);
         return users.stream()
-                .map(userMapper::toResponse)
+                .map(UserMapper::toResponse)
                 .toList();
 
     }

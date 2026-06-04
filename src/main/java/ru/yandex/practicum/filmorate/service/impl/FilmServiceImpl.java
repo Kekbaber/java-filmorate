@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 public class FilmServiceImpl implements FilmService {
 
     private final FilmStorage filmStorage;
-    private final FilmMapper filmMapper;
     private final GenreService genreService;
     private final MpaService mpaService;
 
@@ -56,7 +55,7 @@ public class FilmServiceImpl implements FilmService {
         if (request.getMpa() != null) {
             mpaService.findById(request.getMpa().getId());
         }
-        Film film = filmMapper.toEntity(request);
+        Film film = FilmMapper.toEntity(request);
         Film created = filmStorage.create(film);
         List<Long> genreIds = request.getGenres() != null
                 ? request.getGenres().stream().map(GenreDto::getId).distinct().toList()
@@ -71,7 +70,7 @@ public class FilmServiceImpl implements FilmService {
     public FilmResponse update(UpdateFilmRequest request) {
         log.debug("Update film id={}, name={}", request.getId(), request.getName());
         findById(request.getId());
-        Film film = filmMapper.toEntity(request);
+        Film film = FilmMapper.toEntity(request);
         Film updated = filmStorage.update(film);
         List<Long> genreIds = request.getGenres() != null
                 ? request.getGenres().stream().map(GenreDto::getId).distinct().toList()
@@ -114,7 +113,7 @@ public class FilmServiceImpl implements FilmService {
 
         return films.stream()
                 .map(film -> {
-                    FilmResponse response = filmMapper.toResponse(film);
+                    FilmResponse response = FilmMapper.toResponse(film);
                     response.setMpa(mpaMap.get(film.getMpaId()));
                     response.setGenres(genresMap.getOrDefault(film.getId(), List.of()));
                     return response;
