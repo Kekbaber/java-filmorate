@@ -47,7 +47,6 @@ public class FriendshipServiceImpl implements FriendshipService {
         }
         friendshipStorage.deleteFriendship(friendId, userId);
         friendshipStorage.addFriendRequest(userId, friendId, true);
-        friendshipStorage.addFriendRequest(friendId, userId, true);
         log.debug("Friendship confirmed: userId={}, friendId={}", userId, friendId);
     }
 
