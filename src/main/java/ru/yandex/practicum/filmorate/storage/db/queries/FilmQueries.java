@@ -20,7 +20,7 @@ public final class FilmQueries {
             """;
 
     public static final String INSERT_FILM = """
-            INSERT INTO films(name, description, release_date, duration, rating_id) 
+            INSERT INTO films(name, description, release_date, duration, rating_id)
             VALUES(?, ?, ?, ?, ?)
             """;
 
