@@ -53,4 +53,11 @@ public class FriendshipDBStorage extends BaseStorage<Friendship> implements Frie
         log.debug("DB: delete friendship userId={}, friendId={}", userId, friendId);
         jdbc.update(FriendshipQueries.REMOVE_FRIENDSHIP, userId, friendId);
     }
+
+    @Override
+    public Set<Long> findCommonFriendIds(long userId, long otherId) {
+        log.debug("DB: find common friends of userId={} and otherId={}", userId, otherId);
+        return new HashSet<>(jdbc.query(FriendshipQueries.FIND_COMMON_FRIENDS,
+                (rs, rowNum) -> rs.getLong("friend_id"), userId, otherId));
+    }
 }

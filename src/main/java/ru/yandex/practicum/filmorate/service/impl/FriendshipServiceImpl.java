@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -93,12 +92,7 @@ public class FriendshipServiceImpl implements FriendshipService {
         log.debug("Get common friends: userId={}, otherId={}", userId, otherId);
         userService.findById(userId);
         userService.findById(otherId);
-        Set<Long> userIds = friendshipStorage.findConfirmedFriendIds(userId);
-        Set<Long> otherIds = friendshipStorage.findConfirmedFriendIds(otherId);
-        log.debug("Friends of userId={}: {}, friends of otherId={}: {}", userId, userIds, otherId, otherIds);
-        Set<Long> commonIds = userIds.stream()
-                .filter(otherIds::contains)
-                .collect(Collectors.toSet());
+        Set<Long> commonIds = friendshipStorage.findCommonFriendIds(userId, otherId);
         log.debug("Found {} common friends", commonIds.size());
         return userService.findAllByIds(commonIds);
     }

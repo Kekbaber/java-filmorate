@@ -12,4 +12,6 @@ public interface FriendshipStorage {
     void addFriendRequest(long userId, long friendId, boolean confirmed);
 
     void deleteFriendship(long userId, long friendId);
+
+    Set<Long> findCommonFriendIds(long userId, long otherId);
 }

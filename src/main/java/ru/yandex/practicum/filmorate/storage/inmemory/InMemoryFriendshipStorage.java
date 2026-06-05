@@ -61,4 +61,13 @@ public class InMemoryFriendshipStorage implements FriendshipStorage {
                 (f.getUserId() == friendId && f.getFriendId() == userId));
         log.debug("Current friendships size = {}", friendships.size());
     }
+
+    @Override
+    public Set<Long> findCommonFriendIds(long userId, long otherId) {
+        log.debug("Find common friends of userId={} and otherId={} in storage", userId, otherId);
+        Set<Long> userFriends = findConfirmedFriendIds(userId);
+        Set<Long> otherFriends = findConfirmedFriendIds(otherId);
+        userFriends.retainAll(otherFriends);
+        return userFriends;
+    }
 }
