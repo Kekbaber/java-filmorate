@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.exception.model.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
@@ -106,16 +105,13 @@ public class FilmServiceImpl implements FilmService {
         }
 
         Set<Long> filmIds = films.stream().map(Film::getId).collect(Collectors.toSet());
-        Set<Long> mpaIds = films.stream().map(Film::getMpaId).collect(Collectors.toSet());
-
-        Map<Long, Mpa> mpaMap = mpaService.findAllByIds(mpaIds);
         Map<Long, List<Genre>> genresMap = genreService.findGenresByFilmIds(filmIds);
 
         return films.stream()
                 .map(film -> {
                     FilmResponse response = FilmMapper.toResponse(film);
-                    response.setMpa(mpaMap.get(film.getMpaId()));
                     response.setGenres(genresMap.getOrDefault(film.getId(), List.of()));
+                    response.setMpa(film.getMpa());
                     return response;
                 })
                 .toList();

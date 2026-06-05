@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.dto.request.CreateFilmRequest;
 import ru.yandex.practicum.filmorate.dto.request.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.dto.response.FilmResponse;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FilmMapper {
@@ -17,7 +18,9 @@ public class FilmMapper {
         film.setReleaseDate(request.getReleaseDate());
         film.setDuration(request.getDuration());
         if (request.getMpa() != null) {
-            film.setMpaId(request.getMpa().getId());
+            Mpa mpa = new Mpa();
+            mpa.setId(request.getMpa().getId());
+            film.setMpa(mpa);
         }
         return film;
     }
@@ -30,7 +33,9 @@ public class FilmMapper {
         film.setReleaseDate(request.getReleaseDate());
         film.setDuration(request.getDuration());
         if (request.getMpa() != null) {
-            film.setMpaId(request.getMpa().getId());
+            Mpa mpa = new Mpa();
+            mpa.setId(request.getMpa().getId());
+            film.setMpa(mpa);
         }
         return film;
     }

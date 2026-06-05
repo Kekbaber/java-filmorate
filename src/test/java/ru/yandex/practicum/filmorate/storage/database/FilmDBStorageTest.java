@@ -13,6 +13,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import ru.yandex.practicum.filmorate.exception.model.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.db.FilmDBStorage;
 import ru.yandex.practicum.filmorate.storage.db.mappers.FilmRowMapper;
@@ -46,7 +47,9 @@ class FilmDBStorageTest {
         film.setDescription(description);
         film.setReleaseDate(releaseDate);
         film.setDuration(duration);
-        film.setMpaId(mpaId);
+        Mpa mpa = new Mpa();
+        mpa.setId(mpaId);
+        film.setMpa(mpa);
         return film;
     }
 
@@ -113,7 +116,7 @@ class FilmDBStorageTest {
         Optional<Film> found = filmStorage.findById(id);
         assertThat(found).isPresent();
         assertThat(found.get().getName()).isEqualTo("Findable");
-        assertThat(found.get().getMpaId()).isEqualTo(1L);
+        assertThat(found.get().getMpa().getId()).isEqualTo(1L);
     }
 
     @Test
@@ -144,7 +147,7 @@ class FilmDBStorageTest {
         original.setDescription("New desc");
         original.setReleaseDate(LocalDate.of(2001, 2, 2));
         original.setDuration(200L);
-        original.setMpaId(2);
+        original.getMpa().setId(2);
 
         filmStorage.update(original);
 
@@ -155,7 +158,7 @@ class FilmDBStorageTest {
                 .hasFieldOrPropertyWithValue("description", "New desc")
                 .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2001, 2, 2))
                 .hasFieldOrPropertyWithValue("duration", 200L)
-                .hasFieldOrPropertyWithValue("mpaId", 2L);
+                .hasFieldOrPropertyWithValue("mpa.id", 2L);
     }
 
     @Test

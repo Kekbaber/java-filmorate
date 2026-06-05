@@ -40,7 +40,7 @@ public class FilmDBStorage extends BaseStorage<Film> implements FilmStorage {
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getMpaId()
+                film.getMpa().getId()
         );
         film.setId(id);
         log.debug("DB: created film id={}", id);
@@ -54,7 +54,7 @@ public class FilmDBStorage extends BaseStorage<Film> implements FilmStorage {
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getMpaId(),
+                film.getMpa().getId(),
                 film.getId()
         );
         log.debug("DB: updated film id={}", film.getId());
