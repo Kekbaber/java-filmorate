@@ -1,15 +1,21 @@
 package ru.yandex.practicum.filmorate.service;
 
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dto.response.UserResponse;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface FriendshipService {
-    public void add(long userId, long friendId);
+    List<UserResponse> findConfirmedFriends(long userId);
 
-    public void remove(long userId, long friendId);
+    List<UserResponse> findCommonFriends(long userId, long otherId);
 
-    public Collection<User> get(long userId);
+    void addFriendRequest(long userId, long friendId);
 
-    public Collection<User> getCommonFriends(long id, long otherId);
+    void confirmFriendRequest(long userId, long friendId);
+
+    void deleteFriend(long userId, long friendId);
+
+    List<UserResponse> findOutgoingRequests(long userId);
+
+    List<UserResponse> findIncomingRequests(long userId);
 }

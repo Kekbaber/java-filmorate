@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
-        log.error("Validation error", ex);
+        log.warn("Validation error: {}", ex.getMessage());
 
         List<Map<String, String>> details = ex.getBindingResult()
                 .getFieldErrors()
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleIllegalArgument(IllegalArgumentException ex) {
-        log.error("Illegal argument", ex);
+        log.warn("Illegal argument: {}", ex.getMessage());
         return ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error("Bad Request")
@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(NotFoundException ex) {
-        log.error("Element not found", ex);
+        log.warn("Element not found: {}", ex.getMessage());
         return ErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND.value())
                 .error("Not Found")
@@ -67,7 +67,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateFriendshipException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleDuplicateFriendship(DuplicateFriendshipException ex) {
-        log.error("Friendship duplication", ex);
+        log.warn("Friendship duplication: {}", ex.getMessage());
         return ErrorResponse.builder()
                 .status(HttpStatus.CONFLICT.value())
                 .error("Conflict")
@@ -78,7 +78,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleGeneric(Exception ex) {
-        log.error("Unexpected error", ex);
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
         return ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error("Internal Server Error")

@@ -1,0 +1,291 @@
+package ru.yandex.practicum.filmorate.storage.database;
+
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import ru.yandex.practicum.filmorate.exception.model.InternalServerException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.db.FilmDBStorage;
+import ru.yandex.practicum.filmorate.storage.db.mappers.FilmRowMapper;
+
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+@JdbcTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Import({FilmDBStorage.class, FilmRowMapper.class})
+class FilmDBStorageTest {
+
+    @Autowired
+    private final FilmStorage filmStorage;
+
+    @Autowired
+    private final JdbcTemplate jdbc;
+
+    // Вспомогательный метод для создания объекта Film с заданными параметрами
+    private Film createFilm(String name, String description, LocalDate releaseDate, long duration, long mpaId) {
+        Film film = new Film();
+        film.setName(name);
+        film.setDescription(description);
+        film.setReleaseDate(releaseDate);
+        film.setDuration(duration);
+        Mpa mpa = new Mpa();
+        mpa.setId(mpaId);
+        film.setMpa(mpa);
+        return film;
+    }
+
+    private long createTestUser(String email, String login) {
+        String sql = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, email);
+            ps.setString(2, login);
+            ps.setString(3, login);
+            ps.setDate(4, java.sql.Date.valueOf(LocalDate.of(2000, 1, 1)));
+            return ps;
+        }, keyHolder);
+        return keyHolder.getKey().longValue();
+    }
+
+    private void addLike(long filmId, long userId) {
+        jdbc.update("INSERT INTO likes(film_id, user_id) VALUES(?, ?)", filmId, userId);
+    }
+
+    // Очистка таблицы фильмов перед каждым тестом и сброс автоинкремента
+    @BeforeEach
+    void cleanTable() {
+        jdbc.execute("DELETE FROM film_genre");
+        jdbc.execute("DELETE FROM likes");
+        jdbc.execute("DELETE FROM friendships");
+        jdbc.execute("DELETE FROM films");
+        jdbc.execute("DELETE FROM users");
+        jdbc.execute("ALTER TABLE films ALTER COLUMN id RESTART WITH 1");
+        jdbc.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
+    }
+
+    @Test
+    void findAll_WhenEmpty_ShouldReturnEmpty() {
+        Collection<Film> films = filmStorage.findAll();
+        assertThat(films).isEmpty();
+    }
+
+    @Test
+    void findAll_ShouldReturnAllSavedFilms() {
+        Film film1 = createFilm("Film1", "Desc1", LocalDate.of(2020, 1, 1), 120, 1);
+        Film film2 = createFilm("Film2", "Desc2", LocalDate.of(2021, 2, 2), 90, 2);
+
+        filmStorage.create(film1);
+        filmStorage.create(film2);
+
+        Collection<Film> films = filmStorage.findAll();
+        assertThat(films).hasSize(2);
+        assertThat(films).extracting(Film::getName).containsExactlyInAnyOrder("Film1", "Film2");
+    }
+
+    @Test
+    void findById_WhenNotFound_ShouldReturnEmpty() {
+        Optional<Film> film = filmStorage.findById(999L);
+        assertThat(film).isEmpty();
+    }
+
+    @Test
+    void findById_WhenExists_ShouldReturnFilm() {
+        Film saved = filmStorage.create(createFilm("Findable", "Findable desc", LocalDate.of(1999, 5, 5), 110, 1));
+        long id = saved.getId();
+
+        Optional<Film> found = filmStorage.findById(id);
+        assertThat(found).isPresent();
+        assertThat(found.get().getName()).isEqualTo("Findable");
+        assertThat(found.get().getMpa().getId()).isEqualTo(1L);
+    }
+
+    @Test
+    void create_ShouldGenerateIdAndSaveFilm() {
+        Film newFilm = createFilm("New Film", "New description", LocalDate.of(2022, 12, 12), 150, 3);
+        Film created = filmStorage.create(newFilm);
+
+        assertThat(created.getId()).isPositive();
+        Optional<Film> fetched = filmStorage.findById(created.getId());
+        assertThat(fetched).isPresent();
+        assertThat(fetched.get().getName()).isEqualTo("New Film");
+        assertThat(fetched.get().getDescription()).isEqualTo("New description");
+    }
+
+    @Test
+    void create_WhenMpaIdNotExists_ShouldThrowDataIntegrityViolationException() {
+        Film invalidFilm = createFilm("Bad Film", "Bad desc", LocalDate.of(2020, 1, 1), 100, 999L);
+        assertThatThrownBy(() -> filmStorage.create(invalidFilm))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void update_ShouldChangeFields() {
+        Film original = filmStorage.create(createFilm("Old Name", "Old desc", LocalDate.of(2000, 1, 1), 100, 1));
+        long id = original.getId();
+
+        original.setName("New Name");
+        original.setDescription("New desc");
+        original.setReleaseDate(LocalDate.of(2001, 2, 2));
+        original.setDuration(200L);
+        original.getMpa().setId(2);
+
+        filmStorage.update(original);
+
+        Optional<Film> updated = filmStorage.findById(id);
+        assertThat(updated).isPresent();
+        assertThat(updated.get())
+                .hasFieldOrPropertyWithValue("name", "New Name")
+                .hasFieldOrPropertyWithValue("description", "New desc")
+                .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2001, 2, 2))
+                .hasFieldOrPropertyWithValue("duration", 200L)
+                .hasFieldOrPropertyWithValue("mpa.id", 2L);
+    }
+
+    @Test
+    void update_WhenFilmNotExists_ShouldThrowInternalServerException() {
+        Film nonExistent = createFilm("Ghost", "Ghost desc", LocalDate.of(2000, 1, 1), 100, 1);
+        nonExistent.setId(999L); // несуществующий ID
+        assertThatThrownBy(() -> filmStorage.update(nonExistent))
+                .isInstanceOf(InternalServerException.class)
+                .hasMessage("Не удалось обновить данные");
+
+        // Дополнительно проверяем, что база данных не изменилась (осталась пустой)
+        assertThat(filmStorage.findAll()).isEmpty();
+    }
+
+    @Test
+    void delete_ShouldRemoveFilm() {
+        Film toDelete = filmStorage.create(createFilm("ToDelete", "Delete me", LocalDate.of(2010, 10, 10), 80, 1));
+        long id = toDelete.getId();
+
+        filmStorage.delete(id);
+
+        Optional<Film> deleted = filmStorage.findById(id);
+        assertThat(deleted).isEmpty();
+    }
+
+    @Test
+    void delete_WhenFilmNotExists_ShouldDoNothing() {
+        filmStorage.delete(999L); // не должно быть исключений
+        // Просто проверяем, что всё нормально
+        assertThat(filmStorage.findAll()).isEmpty();
+    }
+
+    @Test
+    void create_WhenReleaseDateTooEarly_ShouldThrowException() {
+        Film invalidFilm = createFilm("Ancient", "Too old", LocalDate.of(1800, 1, 1), 120, 1);
+        // В схеме есть CONSTRAINT chk_release_date CHECK (release_date >= '1895-12-28')
+        assertThatThrownBy(() -> filmStorage.create(invalidFilm))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void create_WhenDurationZeroOrNegative_ShouldThrowException() {
+        Film invalidFilm = createFilm("Zero duration", "No time", LocalDate.of(2000, 1, 1), 0, 1);
+        // CONSTRAINT chk_duration CHECK (duration > 0)
+        assertThatThrownBy(() -> filmStorage.create(invalidFilm))
+                .isInstanceOf(DataIntegrityViolationException.class);
+
+        invalidFilm.setDuration(-10L);
+        assertThatThrownBy(() -> filmStorage.create(invalidFilm))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void findPopularFilms_WhenNoLikes_ShouldReturnAllFilms() {
+        filmStorage.create(createFilm("Film A", "Desc A", LocalDate.of(2000, 1, 1), 100, 1));
+        filmStorage.create(createFilm("Film B", "Desc B", LocalDate.of(2001, 2, 2), 120, 2));
+
+        List<Film> popular = filmStorage.findPopularFilms(10);
+        assertThat(popular).hasSize(2);
+    }
+
+    @Test
+    void findPopularFilms_ShouldReturnFilmsOrderedByLikeCount() {
+        long filmA = filmStorage.create(createFilm("A", "Desc A", LocalDate.of(2000, 1, 1), 100, 1)).getId();
+        long filmB = filmStorage.create(createFilm("B", "Desc B", LocalDate.of(2001, 2, 2), 120, 2)).getId();
+        long filmC = filmStorage.create(createFilm("C", "Desc C", LocalDate.of(2002, 3, 3), 90, 3)).getId();
+
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        long u2 = createTestUser("u2@mail.ru", "user2");
+        long u3 = createTestUser("u3@mail.ru", "user3");
+        long u4 = createTestUser("u4@mail.ru", "user4");
+
+        addLike(filmA, u1);
+        addLike(filmA, u2);
+        addLike(filmB, u1);
+        addLike(filmB, u2);
+        addLike(filmB, u3);
+        addLike(filmC, u4);
+
+        List<Film> top2 = filmStorage.findPopularFilms(2);
+        assertThat(top2).hasSize(2);
+        assertThat(top2.get(0).getId()).isEqualTo(filmB);
+        assertThat(top2.get(1).getId()).isEqualTo(filmA);
+
+        List<Film> top5 = filmStorage.findPopularFilms(5);
+        assertThat(top5).hasSize(3);
+        assertThat(top5).extracting(Film::getId).containsExactly(filmB, filmA, filmC);
+    }
+
+    @Test
+    void findPopularFilms_WhenSameLikeCount_ShouldOrderByFilmIdAsc() {
+        long filmX = filmStorage.create(createFilm("X", "Desc X", LocalDate.of(2000, 1, 1), 100, 1)).getId();
+        long filmY = filmStorage.create(createFilm("Y", "Desc Y", LocalDate.of(2001, 2, 2), 120, 2)).getId();
+
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        long u2 = createTestUser("u2@mail.ru", "user2");
+
+        addLike(filmX, u1);
+        addLike(filmY, u2);
+
+        List<Film> result = filmStorage.findPopularFilms(10);
+        assertThat(result).extracting(Film::getId).containsExactly(filmX, filmY);
+    }
+
+    @Test
+    void findPopularFilms_ShouldRespectLimit() {
+        long film1 = filmStorage.create(createFilm("F1", "D1", LocalDate.of(2000, 1, 1), 100, 1)).getId();
+        long film2 = filmStorage.create(createFilm("F2", "D2", LocalDate.of(2001, 2, 2), 120, 2)).getId();
+        long film3 = filmStorage.create(createFilm("F3", "D3", LocalDate.of(2002, 3, 3), 90, 3)).getId();
+
+        long u1 = createTestUser("u1@mail.ru", "u1");
+        long u2 = createTestUser("u2@mail.ru", "u2");
+        long u3 = createTestUser("u3@mail.ru", "u3");
+
+        addLike(film1, u1);
+        addLike(film2, u1);
+        addLike(film2, u2);
+        addLike(film3, u1);
+        addLike(film3, u2);
+        addLike(film3, u3);
+
+        List<Film> top1 = filmStorage.findPopularFilms(1);
+        assertThat(top1).hasSize(1);
+        assertThat(top1.getFirst().getId()).isEqualTo(film3);
+
+        List<Film> top2 = filmStorage.findPopularFilms(2);
+        assertThat(top2).hasSize(2);
+        assertThat(top2).extracting(Film::getId).containsExactly(film3, film2);
+    }
+}

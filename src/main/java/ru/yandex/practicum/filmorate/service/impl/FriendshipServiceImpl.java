@@ -3,91 +3,96 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.dto.response.UserResponse;
 import ru.yandex.practicum.filmorate.exception.model.DuplicateFriendshipException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.exception.model.NotFoundException;
 import ru.yandex.practicum.filmorate.service.FriendshipService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FriendshipServiceImpl implements FriendshipService {
 
-    private final FriendshipStorage storage;
+    private final FriendshipStorage friendshipStorage;
     private final UserService userService;
 
     @Override
-    public void add(long userId, long friendId) {
-        log.info("Creating new friendship between {} and {}", userId, friendId);
-        log.debug("Checking existence of users {} and {}", userId, friendId);
+    @Transactional
+    public void addFriendRequest(long userId, long friendId) {
+        log.debug("Add friend request: userId={}, friendId={}", userId, friendId);
         userService.findById(userId);
         userService.findById(friendId);
-
-        if (areFriends(userId, friendId)) {
-            log.warn("Friendship {} <-> {} already exist", userId, friendId);
-            throw new DuplicateFriendshipException(
-                String.format("Пользователи %d и %d уже дружат", userId, friendId)
-            );
+        if (friendshipStorage.findConfirmedFriendIds(userId).contains(friendId)) {
+            throw new DuplicateFriendshipException("Вы уже друзья");
         }
-
-        storage.add(userId, friendId);
-        log.debug("Friendship added to storage for {} <-> {}", userId, friendId);
+        friendshipStorage.addFriendRequest(userId, friendId, true);
+        log.debug("Friend request added: userId={}, friendId={}", userId, friendId);
     }
 
     @Override
-    public void remove(long userId, long friendId) {
-        log.info("Removing friendship between {} and {}", userId, friendId);
-        log.debug("Checking existence of users {} and {}", userId, friendId);
+    @Transactional
+    public void confirmFriendRequest(long userId, long friendId) {
+        log.debug("Confirm friendship: userId={}, friendId={}", userId, friendId);
         userService.findById(userId);
         userService.findById(friendId);
-
-        if (!areFriends(userId, friendId)) {
-            log.warn("Attempt to remove non-existing friendship {} <-> {}", userId, friendId);
+        if (!friendshipStorage.findIncomingRequests(userId).contains(friendId)) {
+            throw new NotFoundException("Нет входящей заявки от пользователя " + friendId);
         }
-
-        storage.remove(userId, friendId);
-        log.debug("Friendship removed from storage for {} <-> {}", userId, friendId);
+        friendshipStorage.deleteFriendship(friendId, userId);
+        friendshipStorage.addFriendRequest(userId, friendId, true);
+        log.debug("Friendship confirmed: userId={}, friendId={}", userId, friendId);
     }
 
     @Override
-    public Collection<User> get(long userId) {
-        log.info("Get friends of user id={}", userId);
-        log.debug("Validating user id={} existence", userId);
+    @Transactional
+    public void deleteFriend(long userId, long friendId) {
+        log.debug("Delete friend: userId={}, friendId={}", userId, friendId);
         userService.findById(userId);
-        Set<Long> friendIds = storage.findById(userId);
-        log.debug("Found friend ids: {}", friendIds);
-        Collection<User> friends = friendIds.stream()
-                .map(userService::findById)
-                .collect(Collectors.toList());
-        log.debug("Returned {} friends for user {}", friends.size(), userId);
-        return friends;
+        userService.findById(friendId);
+        friendshipStorage.deleteFriendship(userId, friendId);
+        log.debug("Friend deleted: userId={}, friendId={}", userId, friendId);
     }
 
     @Override
-    public Collection<User> getCommonFriends(long id, long otherId) {
-        log.info("Get common friends between users {} and {}", id, otherId);
-        log.debug("Validating existence of users {} and {}", id, otherId);
-        userService.findById(id);
+    public List<UserResponse> findOutgoingRequests(long userId) {
+        userService.findById(userId);
+        Set<Long> requestIds = friendshipStorage.findOutgoingRequests(userId);
+        log.debug("Found {} outgoing requests for userId={}", requestIds.size(), userId);
+        return userService.findAllByIds(requestIds);
+    }
+
+    @Override
+    public List<UserResponse> findIncomingRequests(long userId) {
+        log.debug("Get incoming requests for userId={}", userId);
+        userService.findById(userId);
+        Set<Long> requestIds = friendshipStorage.findIncomingRequests(userId);
+        log.debug("Found {} incoming requests for userId={}", requestIds.size(), userId);
+        return userService.findAllByIds(requestIds);
+    }
+
+    @Override
+    public List<UserResponse> findConfirmedFriends(long userId) {
+        log.debug("Get confirmed friends for userId={}", userId);
+        userService.findById(userId);
+        Set<Long> friendIds = friendshipStorage.findConfirmedFriendIds(userId);
+        log.debug("Found {} confirmed friends for userId={}", friendIds.size(), userId);
+        return userService.findAllByIds(friendIds);
+    }
+
+    @Override
+    public List<UserResponse> findCommonFriends(long userId, long otherId) {
+        log.debug("Get common friends: userId={}, otherId={}", userId, otherId);
+        userService.findById(userId);
         userService.findById(otherId);
-
-        Set<Long> ids = storage.findById(id);
-        Set<Long> otherIds = storage.findById(otherId);
-        log.debug("Friends of {}: {}, friends of {}: {}", id, ids, otherId, otherIds);
-
-        Collection<User> common = ids.stream()
-                .filter(otherIds::contains)
-                .map(userService::findById)
-                .toList();
-        log.debug("Found {} common friends", common.size());
-        return common;
-    }
-
-    private boolean areFriends(long userId, long friendId) {
-        return storage.findById(userId).contains(friendId);
+        Set<Long> commonIds = friendshipStorage.findCommonFriendIds(userId, otherId);
+        log.debug("Found {} common friends", commonIds.size());
+        return userService.findAllByIds(commonIds);
     }
 }
