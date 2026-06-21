@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GenreQueries {
 
-    public static final String FIND_ALL = "SELECT * FROM genres";
+    public static final String FIND_ALL = "SELECT * FROM genres order by id";
 
     public static final String FIND_BY_ID = "SELECT * FROM genres WHERE id = ?";
 
