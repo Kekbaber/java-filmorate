@@ -31,6 +31,12 @@ public class UserController {
         return users;
     }
 
+    @GetMapping("/{id}")
+    public UserResponse findById(@PathVariable @Positive long id) {
+        log.info("GET /users/{}", id);
+        return userService.findById(id);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse create(@Valid @RequestBody CreateUserRequest request) {
