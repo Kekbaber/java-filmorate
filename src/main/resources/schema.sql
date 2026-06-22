@@ -62,5 +62,15 @@ create TABLE IF NOT EXISTS friendships (
     CONSTRAINT chk_not_self CHECK (user_id <> friend_id)
 );
 
+CREATE TABLE IF NOT EXISTS events (
+    event_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    event_type VARCHAR(10) NOT NULL,
+    operation VARCHAR(10) NOT NULL,
+    entity_id BIGINT NOT NULL,
+    timestamp BIGINT NOT NULL,
+    CONSTRAINT fk_events_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 create index IF NOT EXISTS idx_friendships_user_id ON friendships(user_id);
 create index IF NOT EXISTS idx_friendships_friend_id ON friendships(friend_id);
