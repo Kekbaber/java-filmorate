@@ -99,7 +99,6 @@ public class FriendshipServiceImpl implements FriendshipService {
         userService.findById(userId);
         userService.findById(otherId);
         Set<Long> commonIds = friendshipStorage.findCommonFriendIds(userId, otherId);
-        eventService.save(Event.of(userId, otherId, EventType.FRIEND, EventOperation.UPDATE));
         log.debug("Found {} common friends", commonIds.size());
         return userService.findAllByIds(commonIds);
     }
