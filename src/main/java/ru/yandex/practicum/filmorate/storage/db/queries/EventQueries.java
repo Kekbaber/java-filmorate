@@ -9,7 +9,7 @@ public class EventQueries {
     public static final String FIND_BY_USER_ID = """
             SELECT *
             FROM events WHERE user_id = ?
-            ORDER BY timestamp DESC
+            ORDER BY event_id ASC
             """;
 
     public static final String SAVE = """
