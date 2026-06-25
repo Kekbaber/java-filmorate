@@ -76,4 +76,9 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .limit(limit)
                 .toList();
     }
+
+    @Override
+    public List<Film> findCommonFilms(long userId, long friendId) {
+        return List.of();
+    }
 }
