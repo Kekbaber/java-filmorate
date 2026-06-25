@@ -17,5 +17,5 @@ public interface FilmService {
 
     void delete(long id);
 
-    List<FilmResponse> findPopularFilms(long limit);
+    List<FilmResponse> findPopularFilms(long limit, Long genreId, Integer year);
 }

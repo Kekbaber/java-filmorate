@@ -89,8 +89,11 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<FilmResponse> findPopularFilms(long limit) {
-        List<Film> films = filmStorage.findPopularFilms(limit);
+    public List<FilmResponse> findPopularFilms(long limit, Long genreId, Integer year) {
+        if (genreId != null) {
+            genreService.findById(genreId);
+        }
+        List<Film> films = filmStorage.findPopularFilms(limit, genreId, year);
         log.debug("Found {} films", films.size());
         return buildFilmResponses(films);
     }

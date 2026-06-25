@@ -216,7 +216,7 @@ class FilmDBStorageTest {
         filmStorage.create(createFilm("Film A", "Desc A", LocalDate.of(2000, 1, 1), 100, 1));
         filmStorage.create(createFilm("Film B", "Desc B", LocalDate.of(2001, 2, 2), 120, 2));
 
-        List<Film> popular = filmStorage.findPopularFilms(10);
+        List<Film> popular = filmStorage.findPopularFilms(10, null, null);
         assertThat(popular).hasSize(2);
     }
 
@@ -238,12 +238,12 @@ class FilmDBStorageTest {
         addLike(filmB, u3);
         addLike(filmC, u4);
 
-        List<Film> top2 = filmStorage.findPopularFilms(2);
+        List<Film> top2 = filmStorage.findPopularFilms(2, null, null);
         assertThat(top2).hasSize(2);
         assertThat(top2.get(0).getId()).isEqualTo(filmB);
         assertThat(top2.get(1).getId()).isEqualTo(filmA);
 
-        List<Film> top5 = filmStorage.findPopularFilms(5);
+        List<Film> top5 = filmStorage.findPopularFilms(5, null, null);
         assertThat(top5).hasSize(3);
         assertThat(top5).extracting(Film::getId).containsExactly(filmB, filmA, filmC);
     }
@@ -259,7 +259,7 @@ class FilmDBStorageTest {
         addLike(filmX, u1);
         addLike(filmY, u2);
 
-        List<Film> result = filmStorage.findPopularFilms(10);
+        List<Film> result = filmStorage.findPopularFilms(10, null, null);
         assertThat(result).extracting(Film::getId).containsExactly(filmX, filmY);
     }
 
@@ -280,11 +280,11 @@ class FilmDBStorageTest {
         addLike(film3, u2);
         addLike(film3, u3);
 
-        List<Film> top1 = filmStorage.findPopularFilms(1);
+        List<Film> top1 = filmStorage.findPopularFilms(1, null, null);
         assertThat(top1).hasSize(1);
         assertThat(top1.getFirst().getId()).isEqualTo(film3);
 
-        List<Film> top2 = filmStorage.findPopularFilms(2);
+        List<Film> top2 = filmStorage.findPopularFilms(2, null, null);
         assertThat(top2).hasSize(2);
         assertThat(top2).extracting(Film::getId).containsExactly(film3, film2);
     }
