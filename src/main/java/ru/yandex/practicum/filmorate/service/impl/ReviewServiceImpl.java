@@ -20,7 +20,6 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
