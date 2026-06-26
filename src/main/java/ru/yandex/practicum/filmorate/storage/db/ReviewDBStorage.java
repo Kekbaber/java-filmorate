@@ -58,9 +58,7 @@ public class ReviewDBStorage extends BaseStorage<Review> implements ReviewStorag
 
     @Override
     public Review delete(long id) {
-        Review deleted = findById(id).orElseThrow(
-                () -> new NotFoundException("Ревью с id: " + id + " не найдено")
-        );
+        Review deleted = findById(id).get();
         delete(ReviewQueries.DELETE, id);
         log.debug("DB: deleted review id={}", id);
         return deleted;
