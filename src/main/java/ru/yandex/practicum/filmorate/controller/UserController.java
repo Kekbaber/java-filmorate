@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.dto.request.CreateUserRequest;
 import ru.yandex.practicum.filmorate.dto.request.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.response.EventResponse;
 import ru.yandex.practicum.filmorate.dto.response.UserResponse;
-import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FriendshipService;
 import ru.yandex.practicum.filmorate.service.UserService;
