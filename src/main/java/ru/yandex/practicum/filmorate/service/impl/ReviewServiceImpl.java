@@ -64,8 +64,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public void delete(long id) {
         log.debug("Delete review: id={}", id);
-        Review deleted = reviewStorage.delete(id);
-        eventService.save(Event.of(deleted.getUserId(), id, EventType.REVIEW, EventOperation.REMOVE));
+        Review review = reviewStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("Ревью с id: " + id + " не найдено"));
+        reviewStorage.delete(id);
+        eventService.save(Event.of(review.getUserId(), id, EventType.REVIEW, EventOperation.REMOVE));
         log.debug("Deleted review with id={}", id);
     }
 
