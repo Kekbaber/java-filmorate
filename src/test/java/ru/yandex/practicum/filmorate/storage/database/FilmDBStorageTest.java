@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.database;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -15,8 +16,11 @@ import ru.yandex.practicum.filmorate.exception.model.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.db.FilmDBStorage;
+import ru.yandex.practicum.filmorate.storage.db.GenreDBStorage;
 import ru.yandex.practicum.filmorate.storage.db.mappers.FilmRowMapper;
+import ru.yandex.practicum.filmorate.storage.db.mappers.GenreRowMapper;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -31,11 +35,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({FilmDBStorage.class, FilmRowMapper.class})
+@Import({
+        FilmDBStorage.class,
+        FilmRowMapper.class,
+        GenreDBStorage.class,
+        GenreRowMapper.class
+})
 class FilmDBStorageTest {
 
     @Autowired
     private final FilmStorage filmStorage;
+
+    @Autowired
+    private GenreStorage genreStorage;
 
     @Autowired
     private final JdbcTemplate jdbc;
@@ -287,5 +299,134 @@ class FilmDBStorageTest {
         List<Film> top2 = filmStorage.findPopularFilms(2, null, null);
         assertThat(top2).hasSize(2);
         assertThat(top2).extracting(Film::getId).containsExactly(film3, film2);
+    }
+
+    @Test
+    @DisplayName("Поиск популярных фильмов с фильтрацией по жанру")
+    void findPopularFilms_WhenFilterByGenre_ShouldReturnOnlyFilmsWithThatGenre() {
+        Film film1 = filmStorage.create(createFilm("Film1", "Desc1", LocalDate.of(2000, 1, 1), 100, 1));
+        Film film2 = filmStorage.create(createFilm("Film2", "Desc2", LocalDate.of(2001, 2, 2), 120, 2));
+        Film film3 = filmStorage.create(createFilm("Film3", "Desc3", LocalDate.of(2002, 3, 3), 90, 3));
+
+        genreStorage.addGenresToFilm(film1.getId(), List.of(1L)); // Комедия
+        genreStorage.addGenresToFilm(film2.getId(), List.of(2L)); // Драма
+        genreStorage.addGenresToFilm(film3.getId(), List.of(1L)); // Комедия
+
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        long u2 = createTestUser("u2@mail.ru", "user2");
+        addLike(film1.getId(), u1);
+        addLike(film2.getId(), u1);
+        addLike(film2.getId(), u2);
+        addLike(film3.getId(), u1);
+
+        // Фильтр по жанру 1 (Комедия) – должны вернуться film1 и film3, отсортированные по лайкам
+        List<Film> result = filmStorage.findPopularFilms(10, 1L, null);
+        assertThat(result).hasSize(2);
+        // Сначала film1 (1 лайк), затем film3 (1 лайк) – при равных лайках порядок по id (film1.id < film3.id)
+        assertThat(result).extracting(Film::getId).containsExactly(film1.getId(), film3.getId());
+
+        // Фильтр по жанру 2 (Драма) – должен вернуться только film2
+        result = filmStorage.findPopularFilms(10, 2L, null);
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getId()).isEqualTo(film2.getId());
+    }
+
+    @Test
+    @DisplayName("Поиск популярных фильмов с фильтрацией по году")
+    void findPopularFilms_WhenFilterByYear_ShouldReturnOnlyFilmsWithThatReleaseYear() {
+        Film film1 = filmStorage.create(createFilm("Film1", "Desc1", LocalDate.of(2000, 1, 1), 100, 1));
+        Film film2 = filmStorage.create(createFilm("Film2", "Desc2", LocalDate.of(2001, 2, 2), 120, 2));
+        Film film3 = filmStorage.create(createFilm("Film3", "Desc3", LocalDate.of(2000, 3, 3), 90, 3));
+
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        long u2 = createTestUser("u2@mail.ru", "user2");
+        addLike(film1.getId(), u1);
+        addLike(film2.getId(), u1);
+        addLike(film2.getId(), u2);
+        addLike(film3.getId(), u1);
+
+        // Фильтр по году 2000 – должны вернуться film1 и film3
+        List<Film> result = filmStorage.findPopularFilms(10, null, 2000);
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(Film::getId).containsExactly(film1.getId(), film3.getId());
+
+        // Фильтр по году 2001 – должен вернуться film2
+        result = filmStorage.findPopularFilms(10, null, 2001);
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getId()).isEqualTo(film2.getId());
+    }
+
+    @Test
+    @DisplayName("Поиск популярных фильмов с фильтрацией по жанру и году")
+    void findPopularFilms_WhenFilterByGenreAndYear_ShouldReturnOnlyMatchingFilms() {
+        // Создаём 4 фильма
+        Film film1 = filmStorage.create(createFilm("Film1", "Desc1", LocalDate.of(2000, 1, 1), 100, 1));
+        Film film2 = filmStorage.create(createFilm("Film2", "Desc2", LocalDate.of(2000, 2, 2), 120, 2));
+        Film film3 = filmStorage.create(createFilm("Film3", "Desc3", LocalDate.of(2000, 3, 3), 90, 3)); // год 2000, жанр 2
+        Film film4 = filmStorage.create(createFilm("Film4", "Desc4", LocalDate.of(2001, 4, 4), 110, 1)); // год 2001, жанр 1
+
+        // Добавляем жанры
+        genreStorage.addGenresToFilm(film1.getId(), List.of(1L));
+        genreStorage.addGenresToFilm(film2.getId(), List.of(1L)); // film2 тоже комедия
+        genreStorage.addGenresToFilm(film3.getId(), List.of(2L)); // драма
+        genreStorage.addGenresToFilm(film4.getId(), List.of(1L)); // комедия, но год 2001
+
+        // Создаём пользователей для лайков (4 пользователя)
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        long u2 = createTestUser("u2@mail.ru", "user2");
+        long u3 = createTestUser("u3@mail.ru", "user3");
+        long u4 = createTestUser("u4@mail.ru", "user4");
+
+        // Добавляем лайки:
+        // film1: 1 лайк (u1)
+        addLike(film1.getId(), u1);
+        // film2: 2 лайка (u1, u2)
+        addLike(film2.getId(), u1);
+        addLike(film2.getId(), u2);
+        // film3: 3 лайка (u1, u2, u3) – но жанр 2, не попадает в фильтр
+        addLike(film3.getId(), u1);
+        addLike(film3.getId(), u2);
+        addLike(film3.getId(), u3);
+        // film4: 4 лайка (u1, u2, u3, u4) – но год 2001, не попадает в фильтр
+        addLike(film4.getId(), u1);
+        addLike(film4.getId(), u2);
+        addLike(film4.getId(), u3);
+        addLike(film4.getId(), u4);
+
+        // Фильтр: жанр 1 и год 2000 – должны вернуться film1 и film2, отсортированные по лайкам (film2 – 2 лайка, film1 – 1)
+        List<Film> result = filmStorage.findPopularFilms(10, 1L, 2000);
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(Film::getId).containsExactly(film2.getId(), film1.getId()); // film2 имеет 2 лайка, film1 – 1
+
+        // Проверяем, что film3 и film4 не попали
+        assertThat(result).extracting(Film::getId).doesNotContain(film3.getId(), film4.getId());
+
+        // Жанр 1 и год 2001 – должен вернуться только film4
+        result = filmStorage.findPopularFilms(10, 1L, 2001);
+        assertThat(result).hasSize(1);
+        assertThat(result).extracting(Film::getId).containsExactly(film4.getId());
+    }
+
+    @Test
+    @DisplayName("Поиск популярных фильмов с несуществующим жанром возвращает пустой список")
+    void findPopularFilms_WhenGenreNotFound_ShouldReturnEmpty() {
+        Film film = filmStorage.create(createFilm("Film", "Desc", LocalDate.of(2000, 1, 1), 100, 1));
+        genreStorage.addGenresToFilm(film.getId(), List.of(1L));
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        addLike(film.getId(), u1);
+
+        List<Film> result = filmStorage.findPopularFilms(10, 999L, null);
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Поиск популярных фильмов с несуществующим годом возвращает пустой список")
+    void findPopularFilms_WhenYearNotFound_ShouldReturnEmpty() {
+        Film film = filmStorage.create(createFilm("Film", "Desc", LocalDate.of(2000, 1, 1), 100, 1));
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        addLike(film.getId(), u1);
+
+        List<Film> result = filmStorage.findPopularFilms(10, null, 1999);
+        assertThat(result).isEmpty();
     }
 }

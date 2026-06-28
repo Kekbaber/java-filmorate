@@ -31,15 +31,13 @@ public final class FilmQueries {
     public static final String DELETE_FILM = "DELETE FROM films WHERE id = ?";
 
     public static final String FIND_POPULAR_FILMS = """
-            SELECT f.*, r.name AS rating_name, COUNT(DISTINCT l.user_id) AS likes_count
+            SELECT f.*, r.name AS rating_name,
+                   (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.id) AS likes_count
             FROM films f
             LEFT JOIN ratings r ON f.rating_id = r.id
-            LEFT JOIN film_genre fg ON f.id = fg.film_id
-            LEFT JOIN likes l ON f.id = l.film_id
-            WHERE (? IS NULL OR fg.genre_id = ?)
-            AND (? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?)
-            GROUP BY f.id
-            ORDER BY COUNT(DISTINCT l.user_id) DESC
+            WHERE (? IS NULL OR EXISTS (SELECT 1 FROM film_genre fg WHERE fg.film_id = f.id AND fg.genre_id = ?))
+              AND (? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?)
+            ORDER BY likes_count DESC
             LIMIT ?
             """;
 }
