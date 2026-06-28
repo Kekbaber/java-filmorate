@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.database;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -287,5 +288,94 @@ class FilmDBStorageTest {
         List<Film> top2 = filmStorage.findPopularFilms(2);
         assertThat(top2).hasSize(2);
         assertThat(top2).extracting(Film::getId).containsExactly(film3, film2);
+    }
+
+    @Test
+    @DisplayName("Поиск общих фильмов: нет общих фильмов")
+    void findCommonFilms_WhenNoCommon_ShouldReturnEmpty() {
+        Film film1 = filmStorage.create(createFilm("Film1", "Desc1", LocalDate.of(2000, 1, 1), 100, 1));
+        Film film2 = filmStorage.create(createFilm("Film2", "Desc2", LocalDate.of(2001, 2, 2), 120, 2));
+
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        long u2 = createTestUser("u2@mail.ru", "user2");
+
+        addLike(film1.getId(), u1);
+        addLike(film2.getId(), u2);
+
+        List<Film> common = filmStorage.findCommonFilms(u1, u2);
+        assertThat(common).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Поиск общих фильмов: один общий фильм")
+    void findCommonFilms_WhenOneCommon_ShouldReturnThatFilm() {
+        Film film1 = filmStorage.create(createFilm("Film1", "Desc1", LocalDate.of(2000, 1, 1), 100, 1));
+        Film film2 = filmStorage.create(createFilm("Film2", "Desc2", LocalDate.of(2001, 2, 2), 120, 2));
+        Film film3 = filmStorage.create(createFilm("Film3", "Desc3", LocalDate.of(2002, 3, 3), 90, 3));
+
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        long u2 = createTestUser("u2@mail.ru", "user2");
+
+        addLike(film1.getId(), u1);
+        addLike(film1.getId(), u2); // общий
+        addLike(film2.getId(), u1);
+        addLike(film3.getId(), u2);
+
+        List<Film> common = filmStorage.findCommonFilms(u1, u2);
+        assertThat(common).hasSize(1);
+        assertThat(common.get(0).getId()).isEqualTo(film1.getId());
+    }
+
+    @Test
+    @DisplayName("Поиск общих фильмов: несколько общих, сортировка по популярности")
+    void findCommonFilms_WhenMultipleCommon_ShouldReturnSortedByLikes() {
+        Film filmA = filmStorage.create(createFilm("FilmA", "DescA", LocalDate.of(2000, 1, 1), 100, 1));
+        Film filmB = filmStorage.create(createFilm("FilmB", "DescB", LocalDate.of(2001, 2, 2), 120, 2));
+        Film filmC = filmStorage.create(createFilm("FilmC", "DescC", LocalDate.of(2002, 3, 3), 90, 3));
+        Film filmD = filmStorage.create(createFilm("FilmD", "DescD", LocalDate.of(2003, 4, 4), 110, 1));
+
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        long u2 = createTestUser("u2@mail.ru", "user2");
+        long u3 = createTestUser("u3@mail.ru", "user3");
+
+        // Общие для u1 и u2: filmA, filmB, filmC
+        addLike(filmA.getId(), u1);
+        addLike(filmA.getId(), u2); // общий
+        addLike(filmA.getId(), u3); // дополнительный лайк
+
+        addLike(filmB.getId(), u1);
+        addLike(filmB.getId(), u2); // общий
+        addLike(filmB.getId(), u3); // больше лайков (3)
+
+        addLike(filmC.getId(), u1);
+        addLike(filmC.getId(), u2); // общий
+
+        // filmD только у u1
+        addLike(filmD.getId(), u1);
+
+        // Ожидаемый порядок: filmB (3 лайка), filmA (2 лайка + дополнительный от u3, но filmA имеет 3, filmB тоже 3, тогда порядок по id)
+        // для проверки сортировки сделаем filmB более популярным, добавим ещё один лайк от нового пользователя u4
+        long u4 = createTestUser("u4@mail.ru", "user4");
+        addLike(filmB.getId(), u4); // теперь у filmB 4 лайка
+        // Теперь filmB (4) > filmA (3) > filmC (2)
+
+        List<Film> common = filmStorage.findCommonFilms(u1, u2);
+        assertThat(common).hasSize(3);
+        assertThat(common).extracting(Film::getId)
+                .containsExactly(filmB.getId(), filmA.getId(), filmC.getId());
+
+        assertThat(common).extracting(Film::getId).doesNotContain(filmD.getId());
+    }
+
+    @Test
+    @DisplayName("Поиск общих фильмов: фильм лайкнут одним пользователем, но не другим")
+    void findCommonFilms_WhenFilmLikedByOnlyOneUser_ShouldNotBeInResult() {
+        Film film = filmStorage.create(createFilm("Film", "Desc", LocalDate.of(2000, 1, 1), 100, 1));
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        long u2 = createTestUser("u2@mail.ru", "user2");
+        addLike(film.getId(), u1);
+
+        List<Film> common = filmStorage.findCommonFilms(u1, u2);
+        assertThat(common).isEmpty();
     }
 }

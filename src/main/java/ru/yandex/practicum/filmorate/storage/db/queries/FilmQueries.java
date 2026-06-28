@@ -39,13 +39,11 @@ public final class FilmQueries {
             """;
 
     public static final String FIND_COMMON_FILMS = """
-            SELECT f.*, r.name AS rating_name, COUNT(l.user_id) AS likes_count
+            SELECT f.*, r.name AS rating_name
             FROM films f
             LEFT JOIN ratings r ON f.rating_id = r.id
-            LEFT JOIN likes l ON f.id = l.film_id
             WHERE EXISTS (SELECT 1 FROM likes WHERE film_id = f.id AND user_id = ?)
               AND EXISTS (SELECT 1 FROM likes WHERE film_id = f.id AND user_id = ?)
-            GROUP BY f.id
-            ORDER BY COUNT(l.user_id) DESC
+            ORDER BY (SELECT COUNT(*) FROM likes WHERE film_id = f.id) DESC
             """;
 }
