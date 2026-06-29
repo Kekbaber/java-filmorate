@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortType;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,4 +18,6 @@ public interface FilmStorage {
     void delete(long id);
 
     List<Film> findPopularFilms(long limit);
+
+    List<Film> findDirectorFilms(long directorId, FilmSortType sortType);
 }

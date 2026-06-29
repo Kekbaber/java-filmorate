@@ -37,4 +37,27 @@ public final class FilmQueries {
             LEFT JOIN likes l ON f.id = l.film_id
             GROUP BY f.id ORDER BY COUNT(l.user_id) DESC LIMIT ?
             """;
+
+    public static final String FIND_FILMS_BY_DIRECTOR_LIKES_SORT = """
+            SELECT f.*, r.name AS rating_name
+            FROM films f
+            LEFT JOIN ratings r ON f.rating_id = r.id
+            LEFT JOIN likes l ON f.id = l.film_id
+            WHERE f.id IN ( SELECT film_id
+                FROM director_films
+                WHERE director_id = ?
+            )
+            GROUP BY f.id ORDER BY COUNT(l.user_id) DESC
+            """;
+
+    public static final String FIND_FILMS_BY_DIRECTOR_YEAR_SORT = """
+            SELECT f.*, r.name AS rating_name
+            FROM films f
+            LEFT JOIN ratings r ON f.rating_id = r.id
+            WHERE f.id IN ( SELECT film_id
+                FROM director_films
+                WHERE director_id = ?
+            )
+            ORDER BY EXTRACT(YEAR FROM f.release_date)
+            """;
 }

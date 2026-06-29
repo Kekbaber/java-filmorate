@@ -47,7 +47,7 @@ class UserDBStorageTest {
         jdbc.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
     }
 
-   @Test
+    @Test
     void findAll_WhenEmpty_ShouldReturnEmpty() {
         Collection<User> users = userStorage.findAll();
         assertThat(users).isEmpty();

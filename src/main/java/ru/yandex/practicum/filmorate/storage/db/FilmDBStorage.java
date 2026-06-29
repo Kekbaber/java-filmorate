@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortType;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.db.queries.FilmQueries;
 
@@ -72,4 +73,14 @@ public class FilmDBStorage extends BaseStorage<Film> implements FilmStorage {
         log.debug("DB: find popular films, limit={}", limit);
         return findMany(FilmQueries.FIND_POPULAR_FILMS, limit);
     }
+
+    @Override
+    public List<Film> findDirectorFilms(long directorId, FilmSortType sortType) {
+        log.debug("DB: find directors films, director id={}, sort type = {}", directorId, sortType);
+        return findMany(sortType == FilmSortType.LIKES
+                ? FilmQueries.FIND_FILMS_BY_DIRECTOR_LIKES_SORT
+                : FilmQueries.FIND_FILMS_BY_DIRECTOR_YEAR_SORT, directorId);
+    }
+
+
 }

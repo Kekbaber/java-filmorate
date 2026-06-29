@@ -27,6 +27,19 @@ create TABLE IF NOT EXISTS films (
     CONSTRAINT chk_duration CHECK (duration > 0)
 );
 
+create TABLE IF NOT EXISTS directors (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+create TABLE IF NOT EXISTS director_films (
+    director_id BIGINT NOT NULL,
+    film_id BIGINT NOT NULL,
+    PRIMARY KEY (director_id, film_id),
+    CONSTRAINT fk_df_director FOREIGN KEY (director_id) REFERENCES directors(id) ON DELETE CASCADE,
+    CONSTRAINT fk_df_film FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE
+);
+
 create TABLE IF NOT EXISTS film_genre (
     film_id BIGINT NOT NULL,
     genre_id SMALLINT NOT NULL,

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import ru.yandex.practicum.filmorate.dto.request.CreateFilmRequest;
 import ru.yandex.practicum.filmorate.dto.request.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.dto.response.FilmResponse;
+import ru.yandex.practicum.filmorate.model.FilmSortType;
 
 import java.util.List;
 
@@ -18,4 +19,6 @@ public interface FilmService {
     void delete(long id);
 
     List<FilmResponse> findPopularFilms(long limit);
+
+    List<FilmResponse> findDirectorFilms(long directorId, FilmSortType sortType);
 }

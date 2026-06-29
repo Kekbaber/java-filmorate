@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.request.CreateFilmRequest;
 import ru.yandex.practicum.filmorate.dto.request.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.dto.response.FilmResponse;
+import ru.yandex.practicum.filmorate.model.FilmSortType;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.LikeService;
 
@@ -86,5 +87,14 @@ public class FilmController {
         List<FilmResponse> popular = filmService.findPopularFilms(count);
         log.debug("Returned {} popular films", popular.size());
         return popular;
+    }
+
+    @GetMapping("director/{directorId}")
+    public List<FilmResponse> getDirectorFilmsSorted(@PathVariable @Positive long directorId,
+                                                     @RequestParam(name = "sortBy") FilmSortType sortType) {
+        log.debug("GET /films/director/{}?sortType={}", directorId, sortType);
+        List<FilmResponse> sortedFilms = filmService.findDirectorFilms(directorId, sortType);
+        log.debug("Returned {} sorted films", sortedFilms.size());
+        return sortedFilms;
     }
 }

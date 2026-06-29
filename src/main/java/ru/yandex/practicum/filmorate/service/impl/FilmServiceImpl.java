@@ -5,13 +5,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.dto.request.CreateFilmRequest;
+import ru.yandex.practicum.filmorate.dto.request.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.request.GenreDto;
 import ru.yandex.practicum.filmorate.dto.request.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.dto.response.FilmResponse;
 import ru.yandex.practicum.filmorate.exception.model.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortType;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
@@ -31,6 +35,7 @@ public class FilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
     private final GenreService genreService;
     private final MpaService mpaService;
+    private final DirectorService directorService;
 
     @Override
     public List<FilmResponse> findAll() {
@@ -60,6 +65,10 @@ public class FilmServiceImpl implements FilmService {
                 ? request.getGenres().stream().map(GenreDto::getId).distinct().toList()
                 : null;
         genreService.updateFilmGenres(film.getId(), genreIds);
+        List<Long> directorIds = request.getDirectors() != null
+                ? request.getDirectors().stream().map(DirectorDto::getId).distinct().toList()
+                : null;
+        directorService.updateFilmDirectors(film.getId(), directorIds);
         log.debug("Created film with id={}", created.getId());
         return buildFilmResponse(created);
     }
@@ -75,6 +84,10 @@ public class FilmServiceImpl implements FilmService {
                 ? request.getGenres().stream().map(GenreDto::getId).distinct().toList()
                 : null;
         genreService.updateFilmGenres(film.getId(), genreIds);
+        List<Long> directorIds = request.getDirectors() != null
+                ? request.getDirectors().stream().map(DirectorDto::getId).distinct().toList()
+                : null;
+        directorService.updateFilmDirectors(film.getId(), directorIds);
         log.debug("Updated film id={}", updated.getId());
         return buildFilmResponse(updated);
     }
@@ -95,6 +108,13 @@ public class FilmServiceImpl implements FilmService {
         return buildFilmResponses(films);
     }
 
+    @Override
+    public List<FilmResponse> findDirectorFilms(long directorId, FilmSortType sortType) {
+        List<Film> films = filmStorage.findDirectorFilms(directorId, sortType);
+        log.debug("Found {} films", films.size());
+        return buildFilmResponses(films);
+    }
+
     private FilmResponse buildFilmResponse(Film film) {
         return buildFilmResponses(List.of(film)).getFirst();
     }
@@ -106,11 +126,12 @@ public class FilmServiceImpl implements FilmService {
 
         Set<Long> filmIds = films.stream().map(Film::getId).collect(Collectors.toSet());
         Map<Long, List<Genre>> genresMap = genreService.findGenresByFilmIds(filmIds);
-
+        Map<Long, List<Director>> directorsMap = directorService.findDirectorsByFilmIds(filmIds);
         return films.stream()
                 .map(film -> {
                     FilmResponse response = FilmMapper.toResponse(film);
                     response.setGenres(genresMap.getOrDefault(film.getId(), List.of()));
+                    response.setDirectors(directorsMap.getOrDefault(film.getId(), List.of()));
                     response.setMpa(film.getMpa());
                     return response;
                 })
