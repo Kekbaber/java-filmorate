@@ -16,11 +16,8 @@ import ru.yandex.practicum.filmorate.exception.model.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.db.FilmDBStorage;
-import ru.yandex.practicum.filmorate.storage.db.GenreDBStorage;
 import ru.yandex.practicum.filmorate.storage.db.mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.storage.db.mappers.GenreRowMapper;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -35,19 +32,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({
-        FilmDBStorage.class,
-        FilmRowMapper.class,
-        GenreDBStorage.class,
-        GenreRowMapper.class
-})
+@Import({FilmDBStorage.class, FilmRowMapper.class})
 class FilmDBStorageTest {
 
     @Autowired
     private final FilmStorage filmStorage;
-
-    @Autowired
-    private GenreStorage genreStorage;
 
     @Autowired
     private final JdbcTemplate jdbc;
@@ -81,6 +70,10 @@ class FilmDBStorageTest {
 
     private void addLike(long filmId, long userId) {
         jdbc.update("INSERT INTO likes(film_id, user_id) VALUES(?, ?)", filmId, userId);
+    }
+
+    private void addGenreToFilm(long filmId, long genreId) {
+        jdbc.update("INSERT INTO film_genre(film_id, genre_id) VALUES(?, ?)", filmId, genreId);
     }
 
     // Очистка таблицы фильмов перед каждым тестом и сброс автоинкремента
@@ -308,9 +301,9 @@ class FilmDBStorageTest {
         Film film2 = filmStorage.create(createFilm("Film2", "Desc2", LocalDate.of(2001, 2, 2), 120, 2));
         Film film3 = filmStorage.create(createFilm("Film3", "Desc3", LocalDate.of(2002, 3, 3), 90, 3));
 
-        genreStorage.addGenresToFilm(film1.getId(), List.of(1L)); // Комедия
-        genreStorage.addGenresToFilm(film2.getId(), List.of(2L)); // Драма
-        genreStorage.addGenresToFilm(film3.getId(), List.of(1L)); // Комедия
+        addGenreToFilm(film1.getId(), 1); // Комедия
+        addGenreToFilm(film2.getId(), 2); // Драма
+        addGenreToFilm(film3.getId(), 1L); // Комедия
 
         long u1 = createTestUser("u1@mail.ru", "user1");
         long u2 = createTestUser("u2@mail.ru", "user2");
@@ -366,10 +359,10 @@ class FilmDBStorageTest {
         Film film4 = filmStorage.create(createFilm("Film4", "Desc4", LocalDate.of(2001, 4, 4), 110, 1)); // год 2001, жанр 1
 
         // Добавляем жанры
-        genreStorage.addGenresToFilm(film1.getId(), List.of(1L));
-        genreStorage.addGenresToFilm(film2.getId(), List.of(1L)); // film2 тоже комедия
-        genreStorage.addGenresToFilm(film3.getId(), List.of(2L)); // драма
-        genreStorage.addGenresToFilm(film4.getId(), List.of(1L)); // комедия, но год 2001
+        addGenreToFilm(film1.getId(), 1L);
+        addGenreToFilm(film2.getId(), 1L); // film2 тоже комедия
+        addGenreToFilm(film3.getId(), 2L); // драма
+        addGenreToFilm(film4.getId(), 1L); // комедия, но год 2001
 
         // Создаём пользователей для лайков (4 пользователя)
         long u1 = createTestUser("u1@mail.ru", "user1");
@@ -411,7 +404,7 @@ class FilmDBStorageTest {
     @DisplayName("Поиск популярных фильмов с несуществующим жанром возвращает пустой список")
     void findPopularFilms_WhenGenreNotFound_ShouldReturnEmpty() {
         Film film = filmStorage.create(createFilm("Film", "Desc", LocalDate.of(2000, 1, 1), 100, 1));
-        genreStorage.addGenresToFilm(film.getId(), List.of(1L));
+        addGenreToFilm(film.getId(),1L);
         long u1 = createTestUser("u1@mail.ru", "user1");
         addLike(film.getId(), u1);
 
