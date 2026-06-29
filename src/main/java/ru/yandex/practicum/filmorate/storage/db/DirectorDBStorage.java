@@ -78,6 +78,12 @@ public class DirectorDBStorage extends BaseStorage<Director> implements Director
     }
 
     @Override
+    public void deleteDirectorsFromFilm(long filmId) {
+        log.debug("DB: delete directors from filmId={}", filmId);
+        delete(DirectorQueries.DELETE_FILM_DIRECTORS, filmId);
+    }
+
+    @Override
     public void addDirectorsToFilm(long filmId, List<Long> directorIds) {
         log.debug("DB: add directors to filmId={}: {}", filmId, directorIds);
         jdbc.batchUpdate(DirectorQueries.ADD_DIRECTOR_TO_FILM, directorIds, directorIds.size(),

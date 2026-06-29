@@ -162,10 +162,10 @@ public class DirectorDBStorageTest {
         storage.addDirectorsToFilm(1L, List.of(1L));
 
         Integer count = jdbc.queryForObject("""
-            SELECT COUNT(*)
-            FROM director_films
-            WHERE film_id = 1
-            """, Integer.class);
+                SELECT COUNT(*)
+                FROM director_films
+                WHERE film_id = 1
+                """, Integer.class);
 
         assertThat(count).isEqualTo(1);
     }
@@ -179,10 +179,10 @@ public class DirectorDBStorageTest {
         storage.addDirectorsToFilm(1L, List.of(1L, 2L));
 
         Integer count = jdbc.queryForObject("""
-            SELECT COUNT(*)
-            FROM director_films
-            WHERE film_id = 1
-            """, Integer.class);
+                SELECT COUNT(*)
+                FROM director_films
+                WHERE film_id = 1
+                """, Integer.class);
 
         assertThat(count).isEqualTo(2);
     }

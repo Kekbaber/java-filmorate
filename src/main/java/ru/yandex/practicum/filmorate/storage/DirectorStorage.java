@@ -22,5 +22,15 @@ public interface DirectorStorage {
 
     Set<Long> findExistingIds(Set<Long> ids);
 
-    void addDirectorsToFilm(long filmId, List<Long> directorId);
+    void deleteDirectorsFromFilm(long filmId);
+
+    void addDirectorsToFilm(long filmId, List<Long> directorIds);
+
+    default void updateFilmDirectors(long filmId, List<Long> directorIds) {
+        if (directorIds != null && !directorIds.isEmpty()) {
+            deleteDirectorsFromFilm(filmId);
+            addDirectorsToFilm(filmId, directorIds);
+        }
+
+    }
 }

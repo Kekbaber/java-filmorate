@@ -39,6 +39,7 @@ public class DirectorServiceImpl implements DirectorService {
     }
 
     @Override
+    @Transactional
     public Director create(CreateDirectorRequest request) {
         log.debug("create director with name: {}", request.getName());
         Director director = DirectorMapper.toEntity(request);
@@ -48,6 +49,7 @@ public class DirectorServiceImpl implements DirectorService {
     }
 
     @Override
+    @Transactional
     public Director update(UpdateDirectorRequest request) {
         findById(request.getId());
         log.debug("update director with name: {}", request.getName());
@@ -75,11 +77,10 @@ public class DirectorServiceImpl implements DirectorService {
             if (existingIds.size() != directorIds.size()) {
                 throw new NotFoundException("Один или несколько режиссеров не найдены");
             }
-            storage.addDirectorsToFilm(filmId, directorIds);
         } else {
             log.debug("update film directors: filmId={}, directorIds=null", filmId);
         }
-
+        storage.updateFilmDirectors(filmId, directorIds);
     }
 
     @Override

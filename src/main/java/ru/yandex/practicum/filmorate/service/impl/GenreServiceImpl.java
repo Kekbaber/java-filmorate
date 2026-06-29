@@ -50,10 +50,10 @@ public class GenreServiceImpl implements GenreService {
             if (existingIds.size() != genreIds.size()) {
                 throw new NotFoundException("Один или несколько жанров не найдены");
             }
-            genreStorage.updateFilmGenres(filmId, genreIds);
         } else {
             log.debug("update film genres: filmId={}, genres=null", filmId);
         }
+        genreStorage.updateFilmGenres(filmId, genreIds);
     }
 
     @Override

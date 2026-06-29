@@ -18,6 +18,8 @@ public final class DirectorQueries {
 
     public static final String FIND_EXISTING_IDS = "SELECT id FROM directors WHERE id IN (:ids)";
 
+    public static final String DELETE_FILM_DIRECTORS = "DELETE FROM director_films WHERE film_id = ?";
+
     public static final String FIND_BY_FILM_IDS = """
             SELECT df.film_id, d.id, d.name
             FROM director_films df

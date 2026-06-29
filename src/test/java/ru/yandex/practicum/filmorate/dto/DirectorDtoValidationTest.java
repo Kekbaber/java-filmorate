@@ -6,7 +6,8 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.dto.request.*;
+import ru.yandex.practicum.filmorate.dto.request.CreateDirectorRequest;
+import ru.yandex.practicum.filmorate.dto.request.UpdateDirectorRequest;
 
 import java.util.Set;
 
