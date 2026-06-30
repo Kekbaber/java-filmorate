@@ -40,4 +40,13 @@ public final class FilmQueries {
             ORDER BY likes_count DESC
             LIMIT ?
             """;
+
+    public static final String FIND_COMMON_FILMS = """
+            SELECT f.*, r.name AS rating_name
+            FROM films f
+            LEFT JOIN ratings r ON f.rating_id = r.id
+            WHERE EXISTS (SELECT 1 FROM likes WHERE film_id = f.id AND user_id = ?)
+              AND EXISTS (SELECT 1 FROM likes WHERE film_id = f.id AND user_id = ?)
+            ORDER BY (SELECT COUNT(*) FROM likes WHERE film_id = f.id) DESC
+            """;
 }

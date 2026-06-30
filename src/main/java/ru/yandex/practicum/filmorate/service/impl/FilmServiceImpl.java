@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class FilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
     private final GenreService genreService;
     private final MpaService mpaService;
+    private final UserService userService;
 
     @Override
     public List<FilmResponse> findAll() {
@@ -95,6 +97,16 @@ public class FilmServiceImpl implements FilmService {
         }
         List<Film> films = filmStorage.findPopularFilms(limit, genreId, year);
         log.debug("Found {} films", films.size());
+        return buildFilmResponses(films);
+    }
+
+    @Override
+    public List<FilmResponse> getCommonFilms(long userId, long friendId) {
+        userService.findById(userId);
+        userService.findById(friendId);
+
+        List<Film> films = filmStorage.findCommonFilms(userId, friendId);
+        log.debug("Found {} common films", films.size());
         return buildFilmResponses(films);
     }
 

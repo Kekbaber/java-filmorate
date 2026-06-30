@@ -91,4 +91,13 @@ public class FilmController {
         log.debug("Returned {} popular films", popular.size());
         return popular;
     }
+
+    @GetMapping("/common")
+    public List<FilmResponse> getCommonFilms(
+            @RequestParam long userId,
+            @RequestParam long friendId
+    ) {
+        log.info("GET /films/common?userId={}&friendId={}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }
