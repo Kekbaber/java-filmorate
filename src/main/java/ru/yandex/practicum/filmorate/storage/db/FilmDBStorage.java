@@ -69,9 +69,18 @@ public class FilmDBStorage extends BaseStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public List<Film> findPopularFilms(long limit) {
-        log.debug("DB: find popular films, limit={}", limit);
-        return findMany(FilmQueries.FIND_POPULAR_FILMS, limit);
+    public List<Film> findPopularFilms(long limit, Long genreId, Integer year) {
+        log.debug("DB: find popular films, limit={}, genre={}, year={}", limit, genreId, year);
+        return findMany(FilmQueries.FIND_POPULAR_FILMS,
+                genreId, genreId,
+                year, year,
+                limit);
+    }
+
+    @Override
+    public List<Film> findCommonFilms(long userId, long friendId) {
+        log.debug("DB: find common films for users {} and {}", userId, friendId);
+        return findMany(FilmQueries.FIND_COMMON_FILMS, userId, friendId);
     }
 
     @Override

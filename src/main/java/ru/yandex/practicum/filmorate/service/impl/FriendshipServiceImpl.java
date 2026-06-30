@@ -7,6 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.dto.response.UserResponse;
 import ru.yandex.practicum.filmorate.exception.model.DuplicateFriendshipException;
 import ru.yandex.practicum.filmorate.exception.model.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventOperation;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FriendshipService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
@@ -22,6 +26,7 @@ public class FriendshipServiceImpl implements FriendshipService {
 
     private final FriendshipStorage friendshipStorage;
     private final UserService userService;
+    private final EventService eventService;
 
     @Override
     @Transactional
@@ -33,6 +38,7 @@ public class FriendshipServiceImpl implements FriendshipService {
             throw new DuplicateFriendshipException("Вы уже друзья");
         }
         friendshipStorage.addFriendRequest(userId, friendId, true);
+        eventService.save(Event.of(userId, friendId, EventType.FRIEND, EventOperation.ADD));
         log.debug("Friend request added: userId={}, friendId={}", userId, friendId);
     }
 
@@ -57,6 +63,7 @@ public class FriendshipServiceImpl implements FriendshipService {
         userService.findById(userId);
         userService.findById(friendId);
         friendshipStorage.deleteFriendship(userId, friendId);
+        eventService.save(Event.of(userId, friendId, EventType.FRIEND, EventOperation.REMOVE));
         log.debug("Friend deleted: userId={}, friendId={}", userId, friendId);
     }
 

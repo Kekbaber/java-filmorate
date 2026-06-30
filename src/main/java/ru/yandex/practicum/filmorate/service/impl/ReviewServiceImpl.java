@@ -9,7 +9,11 @@ import ru.yandex.practicum.filmorate.dto.request.UpdateReviewRequest;
 import ru.yandex.practicum.filmorate.dto.response.ReviewResponse;
 import ru.yandex.practicum.filmorate.exception.model.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventOperation;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -26,6 +30,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewStorage reviewStorage;
     private final FilmService filmService;
     private final UserService userService;
+    private final EventService eventService;
 
     @Override
     @Transactional
@@ -36,6 +41,7 @@ public class ReviewServiceImpl implements ReviewService {
         userService.findById(request.getUserId());
         Review review = ReviewMapper.toEntity(request);
         Review created = reviewStorage.create(review);
+        eventService.save(Event.of(created.getUserId(), created.getId(), EventType.REVIEW, EventOperation.ADD));
         log.debug("Created review with id={}", created.getId());
         return ReviewMapper.toResponse(created);
     }
@@ -49,6 +55,7 @@ public class ReviewServiceImpl implements ReviewService {
         userService.findById(request.getUserId());
         Review review = ReviewMapper.toEntity(request);
         Review updated = reviewStorage.update(review);
+        eventService.save(Event.of(updated.getUserId(), updated.getId(), EventType.REVIEW, EventOperation.UPDATE));
         log.debug("Updated review with id={}", updated.getId());
         return ReviewMapper.toResponse(updated);
     }
@@ -57,8 +64,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public void delete(long id) {
         log.debug("Delete review: id={}", id);
-        findById(id);
+        Review review = reviewStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("Ревью с id: " + id + " не найдено"));
         reviewStorage.delete(id);
+        eventService.save(Event.of(review.getUserId(), id, EventType.REVIEW, EventOperation.REMOVE));
         log.debug("Deleted review with id={}", id);
     }
 

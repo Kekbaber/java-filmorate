@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.request.CreateUserRequest;
 import ru.yandex.practicum.filmorate.dto.request.UpdateUserRequest;
+import ru.yandex.practicum.filmorate.dto.response.EventResponse;
 import ru.yandex.practicum.filmorate.dto.response.UserResponse;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FriendshipService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -22,6 +24,7 @@ public class UserController {
 
     private final UserService userService;
     private final FriendshipService friendshipService;
+    private final EventService eventService;
 
     @GetMapping
     public List<UserResponse> findAll() {
@@ -119,5 +122,11 @@ public class UserController {
         List<UserResponse> commonFriends = friendshipService.findCommonFriends(id, otherId);
         log.debug("Returned {} common friends", commonFriends.size());
         return commonFriends;
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<EventResponse> getUserFeed(@PathVariable @Positive long id) {
+        log.info("GET /users/{}/feed", id);
+        return eventService.findByUserId(id);
     }
 }

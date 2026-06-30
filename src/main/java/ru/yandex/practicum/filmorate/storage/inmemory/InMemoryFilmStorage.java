@@ -66,7 +66,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findPopularFilms(long limit) {
+    public List<Film> findPopularFilms(long limit, Long genreId, Integer year) {
         log.debug("Find popular films, limit={}", limit);
         return films.values().stream()
                 .sorted((f1, f2) -> {
@@ -82,5 +82,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<Film> findDirectorFilms(long directorId, FilmSortType sortType) {
         log.debug("DB: find directors films, director id={}, sort type = {}", directorId, sortType);
         throw new UnsupportedOperationException("Method is not implemented");
+    }
+
+    @Override
+    public List<Film> findCommonFilms(long userId, long friendId) {
+        return List.of();
     }
 }

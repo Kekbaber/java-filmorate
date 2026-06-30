@@ -82,11 +82,24 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<FilmResponse> getPopularFilms(@RequestParam(defaultValue = "10") @Positive long count) {
-        log.debug("GET /films/popular?count={}", count);
-        List<FilmResponse> popular = filmService.findPopularFilms(count);
+    public List<FilmResponse> getPopularFilms(
+            @RequestParam(defaultValue = "10") @Positive long count,
+            @RequestParam(required = false) Long genreId,
+            @RequestParam(required = false) Integer year
+            ) {
+        log.debug("GET /films/popular?count={}&genreId={}&year={}", count, genreId, year);
+        List<FilmResponse> popular = filmService.findPopularFilms(count, genreId, year);
         log.debug("Returned {} popular films", popular.size());
         return popular;
+    }
+
+    @GetMapping("/common")
+    public List<FilmResponse> getCommonFilms(
+            @RequestParam long userId,
+            @RequestParam long friendId
+    ) {
+        log.info("GET /films/common?userId={}&friendId={}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     @GetMapping("director/{directorId}")
