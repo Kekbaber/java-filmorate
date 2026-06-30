@@ -4,6 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventOperation;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.LikeService;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -18,6 +22,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeStorage likeStorage;
     private final FilmService filmService;
     private final UserService userService;
+    private final EventService eventService;
 
     @Override
     @Transactional
@@ -26,6 +31,7 @@ public class LikeServiceImpl implements LikeService {
         filmService.findById(filmId);
         userService.findById(userId);
         likeStorage.addLike(filmId, userId);
+        eventService.save(Event.of(userId, filmId, EventType.LIKE, EventOperation.ADD));
         log.debug("Like added: filmId={}, userId={}", filmId, userId);
     }
 
@@ -39,6 +45,7 @@ public class LikeServiceImpl implements LikeService {
             log.warn("Attempt to remove non-existing like: filmId={}, userId={}", filmId, userId);
         }
         likeStorage.delete(filmId, userId);
+        eventService.save(Event.of(userId, filmId, EventType.LIKE, EventOperation.REMOVE));
         log.debug("Like removed: filmId={}, userId={}", filmId, userId);
     }
 }
