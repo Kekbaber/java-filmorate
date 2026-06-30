@@ -14,6 +14,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import ru.yandex.practicum.filmorate.exception.model.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortType;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.db.FilmDBStorage;
@@ -68,12 +69,27 @@ class FilmDBStorageTest {
         return keyHolder.getKey().longValue();
     }
 
+    private long createTestDirector(String name) {
+        String sql = "INSERT INTO directors (name) VALUES (?)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, name);
+            return ps;
+        }, keyHolder);
+        return keyHolder.getKey().longValue();
+    }
+
     private void addLike(long filmId, long userId) {
         jdbc.update("INSERT INTO likes(film_id, user_id) VALUES(?, ?)", filmId, userId);
     }
 
     private void addGenreToFilm(long filmId, long genreId) {
         jdbc.update("INSERT INTO film_genre(film_id, genre_id) VALUES(?, ?)", filmId, genreId);
+    }
+
+    private void addDirector(long filmId, long directorId) {
+        jdbc.update("INSERT INTO director_films(film_id, director_id) VALUES(?, ?)", filmId, directorId);
     }
 
     // Очистка таблицы фильмов перед каждым тестом и сброс автоинкремента
@@ -510,5 +526,53 @@ class FilmDBStorageTest {
 
         List<Film> common = filmStorage.findCommonFilms(u1, u2);
         assertThat(common).isEmpty();
+    }
+
+    @Test
+    public void findDirectorFilms_WhenLikesSort_ShouldReturnInRightOrder() {
+        long filmA = filmStorage.create(createFilm("A", "Desc A", LocalDate.of(2000, 1, 1), 100, 1)).getId();
+        long filmB = filmStorage.create(createFilm("B", "Desc B", LocalDate.of(2001, 2, 2), 120, 2)).getId();
+        long filmC = filmStorage.create(createFilm("C", "Desc C", LocalDate.of(2002, 3, 3), 90, 3)).getId();
+
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        long u2 = createTestUser("u2@mail.ru", "user2");
+        long u3 = createTestUser("u3@mail.ru", "user3");
+        long u4 = createTestUser("u4@mail.ru", "user4");
+
+        long d = createTestDirector("Director");
+
+        addLike(filmA, u1);
+        addLike(filmA, u2);
+        addLike(filmB, u1);
+        addLike(filmB, u2);
+        addLike(filmB, u3);
+        addLike(filmC, u4);
+
+        addDirector(filmA, d);
+        addDirector(filmB, d);
+        addDirector(filmC, d);
+
+        List<Film> result = filmStorage.findDirectorFilms(d, FilmSortType.LIKES);
+
+        assertThat(result).hasSize(3);
+        assertThat(result).extracting(Film::getId).containsExactly(filmB, filmA, filmC);
+    }
+
+    @Test
+    public void findDirectorFilms_WhenYearSort_ShouldReturnInRightOrder() {
+        long filmA = filmStorage.create(createFilm("A", "Desc A", LocalDate.of(2000, 1, 1), 100, 1)).getId();
+        long filmB = filmStorage.create(createFilm("B", "Desc B", LocalDate.of(2001, 2, 2), 120, 2)).getId();
+        long filmC = filmStorage.create(createFilm("C", "Desc C", LocalDate.of(2002, 3, 3), 90, 3)).getId();
+
+        long d = createTestDirector("Director");
+
+        addDirector(filmA, d);
+        addDirector(filmB, d);
+        addDirector(filmC, d);
+
+        List<Film> result = filmStorage.findDirectorFilms(d, FilmSortType.LIKES);
+
+        assertThat(result).hasSize(3);
+        assertThat(result).extracting(Film::getId).containsExactly(filmA, filmB, filmC);
     }
 }

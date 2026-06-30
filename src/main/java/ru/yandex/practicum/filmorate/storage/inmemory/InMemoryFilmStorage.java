@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortType;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.inmemory.id.IdGenerator;
@@ -75,6 +76,12 @@ public class InMemoryFilmStorage implements FilmStorage {
                 })
                 .limit(limit)
                 .toList();
+    }
+
+    @Override
+    public List<Film> findDirectorFilms(long directorId, FilmSortType sortType) {
+        log.debug("DB: find directors films, director id={}, sort type = {}", directorId, sortType);
+        throw new UnsupportedOperationException("Method is not implemented");
     }
 
     @Override

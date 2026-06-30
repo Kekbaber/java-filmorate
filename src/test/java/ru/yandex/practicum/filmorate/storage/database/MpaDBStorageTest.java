@@ -12,11 +12,7 @@ import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.db.MpaDBStorage;
 import ru.yandex.practicum.filmorate.storage.db.mappers.MpaRowMapper;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

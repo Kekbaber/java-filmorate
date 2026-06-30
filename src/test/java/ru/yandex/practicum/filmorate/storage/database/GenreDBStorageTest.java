@@ -17,11 +17,7 @@ import ru.yandex.practicum.filmorate.storage.db.GenreDBStorage;
 import ru.yandex.practicum.filmorate.storage.db.mappers.GenreRowMapper;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

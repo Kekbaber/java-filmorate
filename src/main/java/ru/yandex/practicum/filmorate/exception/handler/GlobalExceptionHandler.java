@@ -6,9 +6,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exception.dto.ErrorResponse;
 import ru.yandex.practicum.filmorate.exception.model.DuplicateFriendshipException;
 import ru.yandex.practicum.filmorate.exception.model.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.dto.ErrorResponse;
 
 import java.util.LinkedHashMap;
 import java.util.List;
