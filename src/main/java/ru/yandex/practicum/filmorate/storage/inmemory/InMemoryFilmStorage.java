@@ -65,7 +65,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findPopularFilms(long limit) {
+    public List<Film> findPopularFilms(long limit, Long genreId, Integer year) {
         log.debug("Find popular films, limit={}", limit);
         return films.values().stream()
                 .sorted((f1, f2) -> {
