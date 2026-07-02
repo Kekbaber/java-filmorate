@@ -27,8 +27,8 @@ public interface DirectorStorage {
     void addDirectorsToFilm(long filmId, List<Long> directorIds);
 
     default void updateFilmDirectors(long filmId, List<Long> directorIds) {
+        deleteDirectorsFromFilm(filmId);
         if (directorIds != null && !directorIds.isEmpty()) {
-            deleteDirectorsFromFilm(filmId);
             addDirectorsToFilm(filmId, directorIds);
         }
 
