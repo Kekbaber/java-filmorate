@@ -35,7 +35,7 @@ public class DirectorServiceImpl implements DirectorService {
     public Director findById(long id) {
         log.debug("find director by id: {}", id);
         return storage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Директор с id=" + id + "не найден"));
+                .orElseThrow(() -> new NotFoundException("Директор с id=" + id + " не найден"));
     }
 
     @Override

@@ -31,7 +31,7 @@ public class GenreServiceImpl implements GenreService {
     public Genre findById(long id) {
         log.debug("find genre by id: {}", id);
         return genreStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Жанр с id=" + id + "не найден"));
+                .orElseThrow(() -> new NotFoundException("Жанр с id=" + id + " не найден"));
     }
 
     @Override
