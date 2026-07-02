@@ -85,6 +85,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> searchFilms(String query, String by) {
+        return List.of();
+    }
+
+    @Override
     public List<Film> findCommonFilms(long userId, long friendId) {
         return List.of();
     }

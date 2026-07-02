@@ -420,7 +420,7 @@ class FilmDBStorageTest {
     @DisplayName("Поиск популярных фильмов с несуществующим жанром возвращает пустой список")
     void findPopularFilms_WhenGenreNotFound_ShouldReturnEmpty() {
         Film film = filmStorage.create(createFilm("Film", "Desc", LocalDate.of(2000, 1, 1), 100, 1));
-        addGenreToFilm(film.getId(),1L);
+        addGenreToFilm(film.getId(), 1L);
         long u1 = createTestUser("u1@mail.ru", "user1");
         addLike(film.getId(), u1);
 
@@ -574,5 +574,131 @@ class FilmDBStorageTest {
 
         assertThat(result).hasSize(3);
         assertThat(result).extracting(Film::getId).containsExactly(filmA, filmB, filmC);
+    }
+
+    @Test
+    @DisplayName("Поиск по названию: частичное совпадение")
+    void searchFilms_WhenSearchingByTitle_ShouldReturnMatchingFilms() {
+        long filmA = filmStorage.create(createFilm("Crouching Tiger", "Desc", LocalDate.of(2000, 1, 1), 100, 1)).getId();
+        long filmB = filmStorage.create(createFilm("Crouching in the Night", "Desc", LocalDate.of(2001, 2, 2), 120, 2)).getId();
+        filmStorage.create(createFilm("Titanic", "Desc", LocalDate.of(1997, 3, 3), 90, 3));
+
+        List<Film> result = filmStorage.searchFilms("crouch", "title");
+
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(Film::getId).containsExactlyInAnyOrder(filmA, filmB);
+    }
+
+    @Test
+    @DisplayName("Поиск по названию: регистронезависимость")
+    void searchFilms_WhenQueryIsUpperCase_ShouldBeCaseInsensitive() {
+        filmStorage.create(createFilm("Crouching Tiger", "Desc", LocalDate.of(2000, 1, 1), 100, 1));
+        filmStorage.create(createFilm("Titanic", "Desc", LocalDate.of(1997, 3, 3), 90, 3));
+
+        List<Film> result = filmStorage.searchFilms("CROUCH", "title");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getName()).isEqualTo("Crouching Tiger");
+    }
+
+    @Test
+    @DisplayName("Поиск по названию: нет совпадений")
+    void searchFilms_WhenNoFilmMatchesQuery_ShouldReturnEmpty() {
+        filmStorage.create(createFilm("Titanic", "Desc", LocalDate.of(1997, 3, 3), 90, 3));
+
+        List<Film> result = filmStorage.searchFilms("zzz", "title");
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Поиск по режиссёру: частичное совпадение")
+    void searchFilms_WhenSearchingByDirector_ShouldReturnMatchingFilms() {
+        long filmId = filmStorage.create(createFilm("Film", "Desc", LocalDate.of(2000, 1, 1), 100, 1)).getId();
+        long directorId = createTestDirector("Quentin Tarantino");
+        addDirector(filmId, directorId);
+
+        List<Film> result = filmStorage.searchFilms("tarantino", "director");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getId()).isEqualTo(filmId);
+    }
+
+    @Test
+    @DisplayName("Поиск по режиссёру: нет совпадений")
+    void searchFilms_WhenNoDirectorMatchesQuery_ShouldReturnEmpty() {
+        long filmId = filmStorage.create(createFilm("Film", "Desc", LocalDate.of(2000, 1, 1), 100, 1)).getId();
+        long directorId = createTestDirector("Quentin Tarantino");
+        addDirector(filmId, directorId);
+
+        List<Film> result = filmStorage.searchFilms("zzz", "director");
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Поиск по названию и режиссёру: объединение результатов")
+    void searchFilms_WhenSearchingByTitleAndDirector_ShouldReturnFilmsFromBoth() {
+        long filmA = filmStorage.create(createFilm("Interview with the Vampire", "Desc", LocalDate.of(1994, 1, 1), 100, 1)).getId();
+        long filmB = filmStorage.create(createFilm("Pulp Fiction", "Desc", LocalDate.of(1994, 2, 2), 120, 2)).getId();
+        long directorId = createTestDirector("Quentin Tarantino");
+        addDirector(filmB, directorId);
+
+        List<Film> result = filmStorage.searchFilms("tarantino", "title,director");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getId()).isEqualTo(filmB);
+    }
+
+    @Test
+    @DisplayName("Поиск по названию и режиссёру: фильм не дублируется")
+    void searchFilms_WhenFilmMatchesBothTitleAndDirector_ShouldReturnOnce() {
+        long filmId = filmStorage.create(createFilm("Tarantino", "Desc", LocalDate.of(2000, 1, 1), 100, 1)).getId();
+        long directorId = createTestDirector("Quentin Tarantino");
+        addDirector(filmId, directorId);
+
+        List<Film> result = filmStorage.searchFilms("tarantino", "title,director");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getId()).isEqualTo(filmId);
+    }
+
+    @Test
+    @DisplayName("Поиск по режиссёру: несколько режиссёров у фильма не дублируют строки")
+    void searchFilms_WhenFilmHasMultipleMatchingDirectors_ShouldNotDuplicate() {
+        long filmId = filmStorage.create(createFilm("Film", "Desc", LocalDate.of(2000, 1, 1), 100, 1)).getId();
+        long d1 = createTestDirector("Director A");
+        long d2 = createTestDirector("Director B");
+        addDirector(filmId, d1);
+        addDirector(filmId, d2);
+
+        List<Film> result = filmStorage.searchFilms("director", "director");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getId()).isEqualTo(filmId);
+    }
+
+    @Test
+    @DisplayName("Поиск: сортировка по популярности (количеству лайков)")
+    void searchFilms_ShouldReturnFilmsOrderedByPopularity() {
+        long filmA = filmStorage.create(createFilm("Film A", "Desc", LocalDate.of(2000, 1, 1), 100, 1)).getId();
+        long filmB = filmStorage.create(createFilm("Film B", "Desc", LocalDate.of(2001, 2, 2), 120, 2)).getId();
+        long filmC = filmStorage.create(createFilm("Film C", "Desc", LocalDate.of(2002, 3, 3), 90, 3)).getId();
+
+        long u1 = createTestUser("u1@mail.ru", "user1");
+        long u2 = createTestUser("u2@mail.ru", "user2");
+        long u3 = createTestUser("u3@mail.ru", "user3");
+
+        addLike(filmA, u1);
+        addLike(filmB, u1);
+        addLike(filmB, u2);
+        addLike(filmC, u1);
+        addLike(filmC, u2);
+        addLike(filmC, u3);
+
+        List<Film> result = filmStorage.searchFilms("Film", "title");
+
+        assertThat(result).hasSize(3);
+        assertThat(result).extracting(Film::getId).containsExactly(filmC, filmB, filmA);
     }
 }

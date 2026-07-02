@@ -91,5 +91,29 @@ public class FilmDBStorage extends BaseStorage<Film> implements FilmStorage {
                 : FilmQueries.FIND_FILMS_BY_DIRECTOR_YEAR_SORT, directorId);
     }
 
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        log.debug("DB: search films, query='{}', by='{}'", query, by);
+        String searchQuery = query.trim();
+
+        boolean byTitle = false;
+        boolean byDirector = false;
+        if (by != null) {
+            for (String token : by.split(",")) {
+                String normalized = token.trim().toLowerCase();
+                if (normalized.equals("title")) byTitle = true;
+                if (normalized.equals("director")) byDirector = true;
+            }
+        }
+
+        if (byTitle && byDirector) {
+            return findMany(FilmQueries.SEARCH_BY_TITLE_OR_DIRECTOR, searchQuery, searchQuery);
+        } else if (byDirector) {
+            return findMany(FilmQueries.SEARCH_BY_DIRECTOR, searchQuery);
+        } else {
+            return findMany(FilmQueries.SEARCH_BY_TITLE, searchQuery);
+        }
+    }
+
 
 }

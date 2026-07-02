@@ -131,6 +131,17 @@ public class FilmServiceImpl implements FilmService {
         return buildFilmResponses(films);
     }
 
+    @Override
+    public List<FilmResponse> search(String query, String by) {
+        log.debug("Search films, query='{}', by='{}'", query, by);
+        if (query == null || query.trim().isEmpty()) {
+            return List.of();
+        }
+        List<Film> films = filmStorage.searchFilms(query, by);
+        log.debug("Found {} films", films.size());
+        return buildFilmResponses(films);
+    }
+
     private FilmResponse buildFilmResponse(Film film) {
         return buildFilmResponses(List.of(film)).getFirst();
     }
