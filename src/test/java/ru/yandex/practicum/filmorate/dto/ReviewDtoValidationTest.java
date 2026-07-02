@@ -28,7 +28,7 @@ class ReviewDtoValidationTest {
     private CreateReviewRequest validCreateRequest() {
         CreateReviewRequest request = new CreateReviewRequest();
         request.setContent("10/10");
-        request.setIsPositive(true);
+        request.setPositive(true);
         request.setUserId(1L);
         request.setFilmId(1L);
         return request;
@@ -38,7 +38,7 @@ class ReviewDtoValidationTest {
         UpdateReviewRequest request = new UpdateReviewRequest();
         request.setReviewId(1L);
         request.setContent("Updated review");
-        request.setIsPositive(false);
+        request.setPositive(false);
         request.setUserId(1L);
         request.setFilmId(1L);
         return request;
@@ -57,7 +57,7 @@ class ReviewDtoValidationTest {
     @Test
     void create_isPositive_WhenNull_ShouldFail() {
         CreateReviewRequest request = validCreateRequest();
-        request.setIsPositive(null);
+        request.setPositive(null);
         Set<ConstraintViolation<CreateReviewRequest>> violations = validator.validate(request);
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("isPositive")));
@@ -119,7 +119,7 @@ class ReviewDtoValidationTest {
     @Test
     void update_isPositive_WhenNull_ShouldFail() {
         UpdateReviewRequest request = validUpdateRequest();
-        request.setIsPositive(null);
+        request.setPositive(null);
         Set<ConstraintViolation<UpdateReviewRequest>> violations = validator.validate(request);
         assertFalse(violations.isEmpty());
     }

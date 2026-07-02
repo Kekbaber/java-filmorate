@@ -49,8 +49,7 @@ public class ReviewDBStorage extends BaseStorage<Review> implements ReviewStorag
 
     @Override
     public Review update(Review review) {
-        update(ReviewQueries.UPDATE, review.getContent(), review.isPositive(),
-                review.getUserId(), review.getFilmId(), review.getId());
+        update(ReviewQueries.UPDATE, review.getContent(), review.isPositive(), review.getId());
         log.debug("DB: updated review id={}", review.getId());
         return findById(review.getId()).orElseThrow();
     }
@@ -64,7 +63,7 @@ public class ReviewDBStorage extends BaseStorage<Review> implements ReviewStorag
     @Override
     public void addReaction(long reviewId, long userId, boolean isLike) {
         log.debug("DB: add reaction reviewId={}, userId={}, isLike={}", reviewId, userId, isLike);
-        executeUpdate(ReviewQueries.CREATE_REACTION, reviewId, userId, isLike);
+        executeUpdate(ReviewQueries.INSERT_REACTION, reviewId, userId, isLike);
     }
 
     @Override

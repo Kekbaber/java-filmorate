@@ -41,14 +41,14 @@ public final class ReviewQueries {
             """;
 
     public static final String UPDATE = """
-            UPDATE reviews SET content = ?, is_positive = ?, user_id = ?, film_id = ? WHERE id = ?
+            UPDATE reviews SET content = ?, is_positive = ? WHERE id = ?
             """;
 
     public static final String DELETE = """
             DELETE FROM reviews WHERE id = ?
             """;
 
-    public static final String CREATE_REACTION = """
+    public static final String INSERT_REACTION = """
             MERGE INTO review_likes (review_id, user_id, is_like) KEY(review_id, user_id) VALUES (?, ?, ?)
             """;
 

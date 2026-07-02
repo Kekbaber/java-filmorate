@@ -11,7 +11,7 @@ public class CreateReviewRequest {
     private String content;
     @NotNull
     @JsonProperty("isPositive")
-    private Boolean isPositive;
+    private Boolean positive;
     @NotNull
     private Long userId;
     @NotNull

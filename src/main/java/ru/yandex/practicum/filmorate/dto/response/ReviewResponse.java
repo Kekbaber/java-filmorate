@@ -7,9 +7,14 @@ import lombok.Data;
 public class ReviewResponse {
     private long reviewId;
     private String content;
-    @JsonProperty("isPositive")
-    private boolean isPositive;
+
+    private boolean positive;
     private long userId;
     private long filmId;
     private int useful;
+
+    @JsonProperty("isPositive")
+    public boolean isPositive() {
+        return positive;
+    }
 }

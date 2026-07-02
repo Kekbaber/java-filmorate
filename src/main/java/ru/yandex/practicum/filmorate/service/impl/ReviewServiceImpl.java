@@ -36,7 +36,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewResponse create(CreateReviewRequest request) {
         log.debug("Create review: filmId={}, userId={}, isPositive={}",
-                request.getFilmId(), request.getUserId(), request.getIsPositive());
+                request.getFilmId(), request.getUserId(), request.getPositive());
         filmService.findById(request.getFilmId());
         userService.findById(request.getUserId());
         Review review = ReviewMapper.toEntity(request);
@@ -51,8 +51,6 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewResponse update(UpdateReviewRequest request) {
         log.debug("Update review: id={}", request.getReviewId());
         findById(request.getReviewId());
-        filmService.findById(request.getFilmId());
-        userService.findById(request.getUserId());
         Review review = ReviewMapper.toEntity(request);
         Review updated = reviewStorage.update(review);
         eventService.save(Event.of(updated.getUserId(), updated.getId(), EventType.REVIEW, EventOperation.UPDATE));

@@ -6,7 +6,7 @@ import lombok.Data;
 public class Review {
     private long id;
     private String content;
-    private boolean isPositive;
+    private boolean positive;
     private long userId;
     private long filmId;
     private int useful;
