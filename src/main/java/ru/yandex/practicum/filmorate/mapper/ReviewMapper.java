@@ -14,7 +14,7 @@ public class ReviewMapper {
     public static Review toEntity(CreateReviewRequest request) {
         Review review = new Review();
         review.setContent(request.getContent());
-        review.setPositive(request.getIsPositive());
+        review.setPositive(request.getPositive());
         review.setUserId(request.getUserId());
         review.setFilmId(request.getFilmId());
         return review;
@@ -24,7 +24,7 @@ public class ReviewMapper {
         Review review = new Review();
         review.setId(request.getReviewId());
         review.setContent(request.getContent());
-        review.setPositive(request.getIsPositive());
+        review.setPositive(request.getPositive());
         review.setUserId(request.getUserId());
         review.setFilmId(request.getFilmId());
         return review;
