@@ -30,9 +30,11 @@ public class LikeServiceImpl implements LikeService {
         log.debug("Add like: filmId={}, userId={}", filmId, userId);
         filmService.findById(filmId);
         userService.findById(userId);
-        likeStorage.addLike(filmId, userId);
-        eventService.save(Event.of(userId, filmId, EventType.LIKE, EventOperation.ADD));
-        log.debug("Like added: filmId={}, userId={}", filmId, userId);
+        if (!likeStorage.findUserIdsByFilmId(filmId).contains(userId)) {
+            likeStorage.addLike(filmId, userId);
+            eventService.save(Event.of(userId, filmId, EventType.LIKE, EventOperation.ADD));
+            log.debug("Like added: filmId={}, userId={}", filmId, userId);
+        }
     }
 
     @Override

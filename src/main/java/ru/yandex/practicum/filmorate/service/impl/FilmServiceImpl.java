@@ -109,7 +109,7 @@ public class FilmServiceImpl implements FilmService {
             genreService.findById(genreId);
         }
         List<Film> films = filmStorage.findPopularFilms(limit, genreId, year);
-        log.debug("Found {} films", films.size());
+        log.debug("Found {} popular films", films.size());
         return buildFilmResponses(films);
     }
 
@@ -125,6 +125,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public List<FilmResponse> findDirectorFilms(long directorId, FilmSortType sortType) {
+        directorService.findById(directorId);
         List<Film> films = filmStorage.findDirectorFilms(directorId, sortType);
         log.debug("Found {} films", films.size());
         return buildFilmResponses(films);
