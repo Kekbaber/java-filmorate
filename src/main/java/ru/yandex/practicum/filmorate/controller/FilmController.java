@@ -86,7 +86,7 @@ public class FilmController {
             @RequestParam(defaultValue = "10") @Positive long count,
             @RequestParam(required = false) Long genreId,
             @RequestParam(required = false) Integer year
-            ) {
+    ) {
         log.debug("GET /films/popular?count={}&genreId={}&year={}", count, genreId, year);
         List<FilmResponse> popular = filmService.findPopularFilms(count, genreId, year);
         log.debug("Returned {} popular films", popular.size());
@@ -109,5 +109,16 @@ public class FilmController {
         List<FilmResponse> sortedFilms = filmService.findDirectorFilms(directorId, sortType);
         log.debug("Returned {} sorted films", sortedFilms.size());
         return sortedFilms;
+    }
+
+    @GetMapping("/search")
+    public List<FilmResponse> search(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "title") String by
+    ) {
+        log.debug("GET /films/search?query={}&by={}", query, by);
+        List<FilmResponse> results = filmService.search(query, by);
+        log.debug("Returned {} films", results.size());
+        return results;
     }
 }
