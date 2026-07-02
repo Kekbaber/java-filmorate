@@ -60,7 +60,7 @@ class ReviewDtoValidationTest {
         request.setPositive(null);
         Set<ConstraintViolation<CreateReviewRequest>> violations = validator.validate(request);
         assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("isPositive")));
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("positive")));
     }
 
     @Test
