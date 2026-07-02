@@ -67,8 +67,8 @@ public class UserController {
     @PutMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void sendFriendRequest(
-            @PathVariable(name = "id") @Positive long userId,
-            @PathVariable @Positive long friendId) {
+            @PathVariable(name = "id") long userId,
+            @PathVariable long friendId) {
         log.info("PUT /users/{}/friends/{}", userId, friendId);
         friendshipService.addFriendRequest(userId, friendId);
     }
@@ -76,8 +76,8 @@ public class UserController {
     @PutMapping("/{id}/friends/{friendId}/confirm")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void confirmFriendRequest(
-            @PathVariable(name = "id") @Positive long userId,
-            @PathVariable @Positive long friendId
+            @PathVariable(name = "id") long userId,
+            @PathVariable long friendId
     ) {
         log.info("PUT /users/{}/friends/{}/confirm", userId, friendId);
         friendshipService.confirmFriendRequest(userId, friendId);
@@ -106,8 +106,8 @@ public class UserController {
     @DeleteMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeFriend(
-            @PathVariable(name = "id") @Positive long userId,
-            @PathVariable @Positive long friendId
+            @PathVariable(name = "id") long userId,
+            @PathVariable long friendId
     ) {
         log.info("DELETE /users/{}/friends/{}", userId, friendId);
         friendshipService.deleteFriend(userId, friendId);

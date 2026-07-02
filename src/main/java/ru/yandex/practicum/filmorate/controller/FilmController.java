@@ -65,7 +65,7 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public void addLike(
             @PathVariable(name = "id") @Positive long filmId,
-            @PathVariable @Positive long userId
+            @PathVariable long userId
     ) {
         log.info("PUT films/{}/like/{} - add like", filmId, userId);
         likeService.addLike(filmId, userId);
@@ -75,7 +75,7 @@ public class FilmController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLike(
             @PathVariable(name = "id") @Positive long filmId,
-            @PathVariable @Positive long userId
+            @PathVariable long userId
     ) {
         log.info("DELETE films/{}/like/{} - remove like", filmId, userId);
         likeService.deleteLike(filmId, userId);
